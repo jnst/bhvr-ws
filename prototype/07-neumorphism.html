@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ネウモーフィズム投票</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .neu-inset {
+            box-shadow: inset 8px 8px 16px #d1d9e6, inset -8px -8px 16px #ffffff;
+            background: #e0e5ec;
+        }
+        .neu-outset {
+            box-shadow: 8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff;
+            background: #e0e5ec;
+        }
+        .neu-pressed {
+            box-shadow: inset 6px 6px 12px #d1d9e6, inset -6px -6px 12px #ffffff;
+        }
+        .neu-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 12px 12px 20px #d1d9e6, -12px -12px 20px #ffffff;
+        }
+        .neu-progress {
+            background: linear-gradient(145deg, #6366f1, #8b5cf6);
+            box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen" style="background: #e0e5ec;">
+    <div class="max-w-3xl mx-auto p-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <div class="neu-outset rounded-3xl p-8 mb-6">
+                <h1 class="text-3xl font-bold text-gray-700 mb-4">
+                    🗳️ 投票システム
+                </h1>
+                <h2 class="text-xl text-gray-600 mb-4">今日のランチは？</h2>
+                <div class="neu-inset rounded-full px-6 py-3 inline-block">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 rounded-full" style="background: linear-gradient(145deg, #10b981, #059669); box-shadow: 2px 2px 4px #d1d9e6;"></div>
+                        <span class="text-gray-600 font-medium">進行中</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 投票前 -->
+        <div id="voting" class="space-y-8">
+            <button onclick="vote('寿司')" 
+                    class="w-full neu-outset neu-hover rounded-2xl p-8 transition-all duration-300">
+                <div class="flex items-center space-x-6">
+                    <div class="neu-outset rounded-2xl p-4">
+                        <div class="text-4xl">🍣</div>
+                    </div>
+                    <div class="text-left">
+                        <h3 class="text-2xl font-bold text-gray-700 mb-2">寿司</h3>
+                        <p class="text-gray-600">新鮮な海の幸を味わう</p>
+                    </div>
+                    <div class="ml-auto neu-inset rounded-full p-3">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </button>
+            
+            <button onclick="vote('ラーメン')" 
+                    class="w-full neu-outset neu-hover rounded-2xl p-8 transition-all duration-300">
+                <div class="flex items-center space-x-6">
+                    <div class="neu-outset rounded-2xl p-4">
+                        <div class="text-4xl">🍜</div>
+                    </div>
+                    <div class="text-left">
+                        <h3 class="text-2xl font-bold text-gray-700 mb-2">ラーメン</h3>
+                        <p class="text-gray-600">温かいスープで心も温まる</p>
+                    </div>
+                    <div class="ml-auto neu-inset rounded-full p-3">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </button>
+            
+            <button onclick="vote('パスタ')" 
+                    class="w-full neu-outset neu-hover rounded-2xl p-8 transition-all duration-300">
+                <div class="flex items-center space-x-6">
+                    <div class="neu-outset rounded-2xl p-4">
+                        <div class="text-4xl">🍝</div>
+                    </div>
+                    <div class="text-left">
+                        <h3 class="text-2xl font-bold text-gray-700 mb-2">パスタ</h3>
+                        <p class="text-gray-600">イタリアの味を楽しもう</p>
+                    </div>
+                    <div class="ml-auto neu-inset rounded-full p-3">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </button>
+        </div>
+
+        <!-- 投票後 -->
+        <div id="results" class="space-y-8 hidden">
+            <div class="neu-outset rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="neu-outset rounded-xl p-3">
+                            <div class="text-3xl">🍣</div>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-700">寿司</h3>
+                            <p class="text-gray-600 text-sm">8票</p>
+                        </div>
+                    </div>
+                    <div class="neu-inset rounded-xl px-4 py-2">
+                        <span class="text-xl font-bold text-gray-700">44%</span>
+                    </div>
+                </div>
+                <div class="neu-inset rounded-full h-4 p-1">
+                    <div class="neu-progress h-full rounded-full transition-all duration-1000" style="width: 44%"></div>
+                </div>
+            </div>
+            
+            <div class="neu-outset rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="neu-outset rounded-xl p-3">
+                            <div class="text-3xl">🍜</div>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-700">ラーメン</h3>
+                            <p class="text-gray-600 text-sm">6票</p>
+                        </div>
+                    </div>
+                    <div class="neu-inset rounded-xl px-4 py-2">
+                        <span class="text-xl font-bold text-gray-700">33%</span>
+                    </div>
+                </div>
+                <div class="neu-inset rounded-full h-4 p-1">
+                    <div class="h-full rounded-full transition-all duration-1000" 
+                         style="width: 33%; background: linear-gradient(145deg, #f59e0b, #d97706); box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1);"></div>
+                </div>
+            </div>
+            
+            <div class="neu-outset rounded-2xl p-6 relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1" 
+                     style="background: linear-gradient(90deg, #10b981, #059669);"></div>
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="neu-outset rounded-xl p-3">
+                            <div class="text-3xl">🍝</div>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-700">パスタ</h3>
+                            <p class="text-gray-600 text-sm">4票</p>
+                        </div>
+                        <div class="neu-inset rounded-full px-3 py-1">
+                            <span class="text-sm font-bold text-gray-700">YOUR VOTE</span>
+                        </div>
+                    </div>
+                    <div class="neu-inset rounded-xl px-4 py-2">
+                        <span class="text-xl font-bold text-gray-700">23%</span>
+                    </div>
+                </div>
+                <div class="neu-inset rounded-full h-4 p-1">
+                    <div class="h-full rounded-full transition-all duration-1000" 
+                         style="width: 23%; background: linear-gradient(145deg, #10b981, #059669); box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1);"></div>
+                </div>
+            </div>
+            
+            <div class="neu-outset rounded-2xl p-6 text-center">
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="neu-inset rounded-xl p-4">
+                        <div class="text-2xl font-bold text-gray-700 mb-1">18</div>
+                        <div class="text-gray-600 text-sm">総投票数</div>
+                    </div>
+                    <div class="neu-inset rounded-xl p-4">
+                        <div class="text-2xl font-bold text-gray-700 mb-1">🥇</div>
+                        <div class="text-gray-600 text-sm">寿司が1位</div>
+                    </div>
+                    <div class="neu-inset rounded-xl p-4">
+                        <div class="flex items-center justify-center space-x-2 mb-1">
+                            <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                            <span class="text-sm font-bold text-gray-700">LIVE</span>
+                        </div>
+                        <div class="text-gray-600 text-sm">リアルタイム</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function vote(choice) {
+            document.getElementById('voting').classList.add('hidden');
+            document.getElementById('results').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

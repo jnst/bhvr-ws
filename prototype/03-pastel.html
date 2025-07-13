@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>パステル投票</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'pastel-pink': '#FFD1DC',
+                        'pastel-blue': '#AEC6CF',
+                        'pastel-green': '#B5EAD7',
+                        'pastel-yellow': '#FFFACD',
+                        'pastel-purple': '#DDA0DD',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-br from-pastel-pink via-pastel-blue to-pastel-purple min-h-screen">
+    <div class="max-w-2xl mx-auto p-8">
+        <div class="text-center mb-8">
+            <div class="inline-block bg-white/70 backdrop-blur-sm rounded-full px-8 py-4 mb-4">
+                <h1 class="text-3xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent">
+                    ✨ やさしい投票 ✨
+                </h1>
+            </div>
+            <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 inline-block">
+                <h2 class="text-xl text-gray-700 font-medium">🍽️ 今日のランチは？</h2>
+                <p class="text-gray-600 text-sm mt-2">みんなで決めましょう♪</p>
+            </div>
+        </div>
+
+        <!-- 投票前 -->
+        <div id="voting" class="space-y-4">
+            <button onclick="vote('寿司')" 
+                    class="w-full p-6 bg-white/60 backdrop-blur-sm rounded-3xl border border-white/50
+                           hover:bg-white/80 hover:scale-105 transition-all duration-300
+                           shadow-lg hover:shadow-xl">
+                <div class="flex items-center space-x-4">
+                    <div class="text-4xl">🍣</div>
+                    <div class="text-left">
+                        <div class="text-lg font-semibold text-gray-800">寿司</div>
+                        <div class="text-sm text-gray-600">新鮮なお魚♪</div>
+                    </div>
+                </div>
+            </button>
+            
+            <button onclick="vote('ラーメン')" 
+                    class="w-full p-6 bg-white/60 backdrop-blur-sm rounded-3xl border border-white/50
+                           hover:bg-white/80 hover:scale-105 transition-all duration-300
+                           shadow-lg hover:shadow-xl">
+                <div class="flex items-center space-x-4">
+                    <div class="text-4xl">🍜</div>
+                    <div class="text-left">
+                        <div class="text-lg font-semibold text-gray-800">ラーメン</div>
+                        <div class="text-sm text-gray-600">あったか〜い♪</div>
+                    </div>
+                </div>
+            </button>
+            
+            <button onclick="vote('パスタ')" 
+                    class="w-full p-6 bg-white/60 backdrop-blur-sm rounded-3xl border border-white/50
+                           hover:bg-white/80 hover:scale-105 transition-all duration-300
+                           shadow-lg hover:shadow-xl">
+                <div class="flex items-center space-x-4">
+                    <div class="text-4xl">🍝</div>
+                    <div class="text-left">
+                        <div class="text-lg font-semibold text-gray-800">パスタ</div>
+                        <div class="text-sm text-gray-600">おしゃれ〜♪</div>
+                    </div>
+                </div>
+            </button>
+        </div>
+
+        <!-- 投票後 -->
+        <div id="results" class="space-y-4 hidden">
+            <div class="bg-white/70 backdrop-blur-sm rounded-3xl p-6 border border-white/50">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">🍣</span>
+                        <span class="font-semibold text-gray-800">寿司</span>
+                    </div>
+                    <div class="bg-pastel-pink rounded-full px-3 py-1">
+                        <span class="text-pink-700 font-bold text-sm">44%</span>
+                    </div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="bg-gradient-to-r from-pink-300 to-pink-400 h-full rounded-full transition-all duration-1000" style="width: 44%"></div>
+                </div>
+            </div>
+            
+            <div class="bg-white/70 backdrop-blur-sm rounded-3xl p-6 border border-white/50">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">🍜</span>
+                        <span class="font-semibold text-gray-800">ラーメン</span>
+                    </div>
+                    <div class="bg-pastel-blue rounded-full px-3 py-1">
+                        <span class="text-blue-700 font-bold text-sm">33%</span>
+                    </div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="bg-gradient-to-r from-blue-300 to-blue-400 h-full rounded-full transition-all duration-1000" style="width: 33%"></div>
+                </div>
+            </div>
+            
+            <div class="bg-white/90 backdrop-blur-sm rounded-3xl p-6 border-2 border-pastel-green shadow-lg">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">🍝</span>
+                        <span class="font-semibold text-gray-800">パスタ</span>
+                        <span class="text-pink-500 text-xl">💕</span>
+                    </div>
+                    <div class="bg-pastel-green rounded-full px-3 py-1">
+                        <span class="text-green-700 font-bold text-sm">23%</span>
+                    </div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="bg-gradient-to-r from-green-300 to-green-400 h-full rounded-full transition-all duration-1000" style="width: 23%"></div>
+                </div>
+                <div class="text-center mt-3">
+                    <span class="text-green-700 font-medium text-sm">あなたの選択 ✨</span>
+                </div>
+            </div>
+            
+            <div class="text-center mt-8">
+                <div class="bg-white/70 backdrop-blur-sm rounded-2xl p-4 inline-block">
+                    <div class="text-gray-700 text-sm">
+                        💝 みんなの投票: <span class="font-bold">18票</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function vote(choice) {
+            document.getElementById('voting').classList.add('hidden');
+            document.getElementById('results').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ミニマル投票</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white min-h-screen font-mono">
+    <div class="max-w-lg mx-auto p-8">
+        <div class="mb-8">
+            <h1 class="text-black text-sm uppercase tracking-wider mb-2">Question</h1>
+            <h2 class="text-2xl font-normal text-black">今日のランチは？</h2>
+        </div>
+
+        <!-- 投票前 -->
+        <div id="voting" class="space-y-1">
+            <button onclick="vote('寿司')" class="w-full p-4 text-left border-b border-gray-200 hover:bg-gray-50 text-lg">
+                寿司
+            </button>
+            <button onclick="vote('ラーメン')" class="w-full p-4 text-left border-b border-gray-200 hover:bg-gray-50 text-lg">
+                ラーメン
+            </button>
+            <button onclick="vote('パスタ')" class="w-full p-4 text-left border-b border-gray-200 hover:bg-gray-50 text-lg">
+                パスタ
+            </button>
+        </div>
+
+        <!-- 投票後 -->
+        <div id="results" class="space-y-4 hidden">
+            <div class="border-b border-gray-200 pb-3">
+                <div class="flex justify-between mb-1">
+                    <span>寿司</span>
+                    <span class="text-sm text-gray-600">44%</span>
+                </div>
+                <div class="w-full bg-gray-100 h-1">
+                    <div class="bg-black h-1" style="width: 44%"></div>
+                </div>
+            </div>
+            <div class="border-b border-gray-200 pb-3">
+                <div class="flex justify-between mb-1">
+                    <span>ラーメン</span>
+                    <span class="text-sm text-gray-600">33%</span>
+                </div>
+                <div class="w-full bg-gray-100 h-1">
+                    <div class="bg-black h-1" style="width: 33%"></div>
+                </div>
+            </div>
+            <div class="border-b border-gray-200 pb-3 bg-gray-50 -mx-4 px-4 py-3">
+                <div class="flex justify-between mb-1">
+                    <span class="font-medium">パスタ ←</span>
+                    <span class="text-sm text-gray-600">23%</span>
+                </div>
+                <div class="w-full bg-gray-100 h-1">
+                    <div class="bg-black h-1" style="width: 23%"></div>
+                </div>
+            </div>
+            <div class="text-xs text-gray-500 pt-4">
+                Total: 18 votes
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function vote(choice) {
+            document.getElementById('voting').classList.add('hidden');
+            document.getElementById('results').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

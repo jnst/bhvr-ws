@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Interactive Objects 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: 
+                radial-gradient(circle at 25% 25%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(236, 72, 153, 0.1) 0%, transparent 50%),
+                linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            perspective: 1000px;
+        }
+        
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        
+        .card-3d:hover {
+            transform: rotateY(10deg) rotateX(5deg) translateZ(50px);
+            box-shadow: 
+                0 35px 80px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+        
+        .floating-3d {
+            animation: float3d 6s ease-in-out infinite;
+        }
+        
+        @keyframes float3d {
+            0%, 100% { 
+                transform: translateY(0px) rotateX(0deg); 
+            }
+            50% { 
+                transform: translateY(-20px) rotateX(5deg); 
+            }
+        }
+        
+        .emoji-3d {
+            transform-style: preserve-3d;
+            transition: all 0.3s ease;
+            display: inline-block;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+        }
+        
+        .emoji-3d:hover {
+            transform: rotateY(20deg) rotateX(10deg) scale(1.1);
+            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));
+        }
+        
+        .metallic-shine {
+            background: linear-gradient(145deg, 
+                #ffffff, 
+                #f1f5f9, 
+                #e2e8f0, 
+                #cbd5e1, 
+                #94a3b8);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .metallic-shine::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(255, 255, 255, 0.5) 50%,
+                transparent 70%
+            );
+            transform: rotate(45deg);
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+        
+        .metallic-shine:hover::before {
+            animation: shine 0.6s ease-in-out;
+        }
+        
+        @keyframes shine {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+                opacity: 0;
+            }
+        }
+        
+        .progress-3d {
+            height: 20px;
+            border-radius: 10px;
+            background: #e2e8f0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress-bar-3d {
+            height: 100%;
+            border-radius: 10px;
+            position: relative;
+            background: linear-gradient(45deg, #3b82f6, #1d4ed8, #1e40af);
+            box-shadow: 
+                0 4px 8px rgba(59, 130, 246, 0.3),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2);
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .progress-bar-3d::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 2px;
+            height: 4px;
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0.8) 0%, 
+                rgba(255, 255, 255, 0.2) 100%);
+            border-radius: 10px;
+        }
+        
+        .depth-layer {
+            position: relative;
+            z-index: 10;
+        }
+        
+        .depth-layer::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: -8px;
+            bottom: -8px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: inherit;
+            z-index: -1;
+            filter: blur(4px);
+        }
+        
+        .interactive-object {
+            transform-style: preserve-3d;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .interactive-object:hover {
+            transform: translateZ(20px) rotateX(5deg) rotateY(5deg);
+        }
+        
+        .interactive-object:active {
+            transform: translateZ(5px) scale(0.98);
+        }
+        
+        .glass-morph-3d {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        
+        .voted-selection {
+            background: linear-gradient(145deg, #10b981, #059669);
+            box-shadow: 
+                0 20px 40px rgba(16, 185, 129, 0.3),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="max-w-6xl mx-auto p-6">
+        <!-- Header -->
+        <div class="text-center mb-12 pt-8">
+            <div class="depth-layer metallic-shine rounded-3xl p-8 mb-8 floating-3d">
+                <h1 class="text-5xl font-bold text-gray-800 mb-4">
+                    投票システム 3D
+                </h1>
+                <p class="text-gray-600 text-xl mb-6">Interactive 3D Objects Interface</p>
+                <div class="interactive-object glass-morph-3d rounded-full px-6 py-3 inline-block">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
+                        <span class="text-gray-700 font-medium">3D Mode • 18 users online</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question -->
+        <div class="depth-layer glass-morph-3d rounded-3xl p-8 mb-10 floating-3d" style="animation-delay: 0.5s;">
+            <h2 class="text-3xl font-semibold text-gray-800 text-center mb-4">
+                今日のランチは？
+            </h2>
+            <p class="text-gray-600 text-center text-lg">
+                3Dカードをクリックして投票してください
+            </p>
+        </div>
+
+        <!-- 投票前 -->
+        <div id="voting" class="grid md:grid-cols-3 gap-8">
+            <div class="card-3d depth-layer metallic-shine rounded-2xl p-8 interactive-object"
+                 onclick="vote('寿司')">
+                <div class="text-center space-y-6">
+                    <div class="emoji-3d text-8xl floating-3d">🍣</div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-3">寿司</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">
+                            新鮮な海の幸を使用した日本の伝統料理。
+                            職人の技が光る繊細な味わいをお楽しみください。
+                        </p>
+                        <div class="flex flex-wrap justify-center gap-2 mb-6">
+                            <span class="interactive-object glass-morph-3d px-3 py-1 rounded-full text-sm text-gray-700 font-medium">和食</span>
+                            <span class="interactive-object glass-morph-3d px-3 py-1 rounded-full text-sm text-gray-700 font-medium">高級</span>
+                            <span class="interactive-object glass-morph-3d px-3 py-1 rounded-full text-sm text-gray-700 font-medium">ヘルシー</span>
+                        </div>
+                    </div>
+                    <div class="interactive-object bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl py-3 font-semibold shadow-lg">
+                        3D クリックで投票
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-3d depth-layer metallic-shine rounded-2xl p-8 interactive-object"
+                 onclick="vote('ラーメン')">
+                <div class="text-center space-y-6">
+                    <div class="emoji-3d text-8xl floating-3d" style="animation-delay: 1s;">🍜</div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-3">ラーメン</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">
+                            温かいスープと麺の絶妙なハーモニー。
+                            心も体も温まる日本のソウルフードです。
+                        </p>
+                        <div class="flex flex-wrap justify-center gap-2 mb-6">
+                            <span class="interactive-object glass-morph-3d px-3 py-1 rounded-full text-sm text-gray-700 font-medium">麺類</span>
+                            <span class="interactive-object glass-morph-3d px-3 py-1 rounded-full text-sm text-gray-700 font-medium">温かい</span>
+                            <span class="interactive-object glass-morph-3d px-3 py-1 rounded-full text-sm text-gray-700 font-medium">カジュアル</span>
+                        </div>
+                    </div>
+                    <div class="interactive-object bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl py-3 font-semibold shadow-lg">
+                        3D クリックで投票
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-3d depth-layer metallic-shine rounded-2xl p-8 interactive-object"
+                 onclick="vote('パスタ')">
+                <div class="text-center space-y-6">
+                    <div class="emoji-3d text-8xl floating-3d" style="animation-delay: 2s;">🍝</div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-3">パスタ</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">
+                            イタリアの伝統的な味を現代風にアレンジ。
+                            豊富なバリエーションが魅力です。
+                        </p>
+                        <div class="flex flex-wrap justify-center gap-2 mb-6">
+                            <span class="interactive-object glass-morph-3d px-3 py-1 rounded-full text-sm text-gray-700 font-medium">洋食</span>
+                            <span class="interactive-object glass-morph-3d px-3 py-1 rounded-full text-sm text-gray-700 font-medium">多彩</span>
+                            <span class="interactive-object glass-morph-3d px-3 py-1 rounded-full text-sm text-gray-700 font-medium">おしゃれ</span>
+                        </div>
+                    </div>
+                    <div class="interactive-object bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl py-3 font-semibold shadow-lg">
+                        3D クリックで投票
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 投票後 -->
+        <div id="results" class="space-y-8 hidden">
+            <!-- 投票完了通知 -->
+            <div class="depth-layer glass-morph-3d rounded-3xl p-6 text-center floating-3d">
+                <div class="emoji-3d text-6xl mb-4">✅</div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">投票完了</h3>
+                <p class="text-gray-600">3D結果をリアルタイムで表示中...</p>
+            </div>
+
+            <!-- 結果表示 -->
+            <div class="depth-layer metallic-shine rounded-2xl p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="emoji-3d text-5xl">🍣</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800">寿司</h3>
+                            <p class="text-gray-600">8票 • 1位</p>
+                        </div>
+                        <div class="interactive-object glass-morph-3d px-4 py-2 rounded-full">
+                            <span class="text-yellow-600 font-bold">👑 Winner</span>
+                        </div>
+                    </div>
+                    <div class="text-4xl font-bold text-blue-600">44%</div>
+                </div>
+                <div class="progress-3d">
+                    <div class="progress-bar-3d transition-all duration-1000" style="width: 44%"></div>
+                </div>
+            </div>
+
+            <div class="depth-layer metallic-shine rounded-2xl p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="emoji-3d text-5xl">🍜</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800">ラーメン</h3>
+                            <p class="text-gray-600">6票</p>
+                        </div>
+                    </div>
+                    <div class="text-4xl font-bold text-orange-600">33%</div>
+                </div>
+                <div class="progress-3d">
+                    <div class="bg-gradient-to-r from-orange-500 to-red-500 h-full rounded-lg transition-all duration-1000 shadow-lg" style="width: 33%"></div>
+                </div>
+            </div>
+
+            <div class="depth-layer voted-selection rounded-2xl p-8 text-white">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="emoji-3d text-5xl">🍝</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-white">パスタ</h3>
+                            <p class="text-emerald-100">4票</p>
+                        </div>
+                        <div class="interactive-object bg-white/20 px-4 py-2 rounded-full">
+                            <span class="text-white font-bold">✓ あなたの選択</span>
+                        </div>
+                    </div>
+                    <div class="text-4xl font-bold text-white">23%</div>
+                </div>
+                <div class="progress-3d">
+                    <div class="bg-gradient-to-r from-emerald-300 to-green-300 h-full rounded-lg transition-all duration-1000 shadow-lg" style="width: 23%"></div>
+                </div>
+            </div>
+
+            <!-- 統計情報 -->
+            <div class="depth-layer glass-morph-3d rounded-3xl p-8">
+                <div class="grid grid-cols-3 gap-6 text-center">
+                    <div class="interactive-object metallic-shine rounded-2xl p-6">
+                        <div class="emoji-3d text-4xl mb-3">📊</div>
+                        <div class="text-3xl font-bold text-gray-800 mb-2">18</div>
+                        <div class="text-gray-600 font-medium">総投票数</div>
+                    </div>
+                    <div class="interactive-object metallic-shine rounded-2xl p-6">
+                        <div class="emoji-3d text-4xl mb-3">🏆</div>
+                        <div class="text-3xl font-bold text-gray-800 mb-2">1位</div>
+                        <div class="text-gray-600 font-medium">寿司が勝利</div>
+                    </div>
+                    <div class="interactive-object metallic-shine rounded-2xl p-6">
+                        <div class="flex items-center justify-center space-x-2 mb-3">
+                            <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                            <span class="text-2xl font-bold text-gray-800">Live</span>
+                        </div>
+                        <div class="text-gray-600 font-medium">3D リアルタイム</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function vote(choice) {
+            document.getElementById('voting').classList.add('hidden');
+            document.getElementById('results').classList.remove('hidden');
+            
+            // Smooth scroll to results
+            document.getElementById('results').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+
+        // Add subtle mouse parallax effect
+        document.addEventListener('mousemove', (e) => {
+            const cards = document.querySelectorAll('.card-3d');
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
+            
+            cards.forEach((card, index) => {
+                const xRotation = (mouseY - 0.5) * 10;
+                const yRotation = (mouseX - 0.5) * 10;
+                
+                if (!card.matches(':hover')) {
+                    card.style.transform = `rotateX(${xRotation * 0.3}deg) rotateY(${yRotation * 0.3}deg)`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

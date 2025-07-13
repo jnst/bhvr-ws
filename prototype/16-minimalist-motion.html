@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimalist Motion 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Purposeful micro-interactions */
+        .micro-hover {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .micro-hover:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .micro-scale {
+            transition: transform 0.15s ease-out;
+        }
+        
+        .micro-scale:hover {
+            transform: scale(1.02);
+        }
+        
+        .micro-scale:active {
+            transform: scale(0.98);
+        }
+        
+        /* Gentle animations */
+        .gentle-fade-in {
+            animation: gentleFadeIn 0.6s ease-out forwards;
+            opacity: 0;
+        }
+        
+        @keyframes gentleFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .gentle-slide-in {
+            animation: gentleSlideIn 0.8s ease-out forwards;
+            opacity: 0;
+        }
+        
+        @keyframes gentleSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* Breathing animation for status indicator */
+        .breathe {
+            animation: breathe 3s ease-in-out infinite;
+        }
+        
+        @keyframes breathe {
+            0%, 100% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% { 
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+        
+        /* Progress bar with smooth fill */
+        .progress-smooth {
+            background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+            border-radius: 6px;
+            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-smooth::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.3) 50%, 
+                transparent 100%);
+            animation: progressShine 2s ease-in-out infinite;
+        }
+        
+        @keyframes progressShine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        /* Button ripple effect */
+        .ripple-button {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ripple-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.3s ease, height 0.3s ease;
+        }
+        
+        .ripple-button:active::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        /* Floating label animation */
+        .floating-label {
+            position: relative;
+        }
+        
+        .floating-label .label {
+            position: absolute;
+            top: 50%;
+            left: 12px;
+            transform: translateY(-50%);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            color: #6b7280;
+        }
+        
+        .floating-label.active .label {
+            top: -10px;
+            left: 8px;
+            font-size: 0.75rem;
+            color: #3b82f6;
+            background: white;
+            padding: 0 4px;
+        }
+        
+        /* Context-aware animations */
+        .success-bounce {
+            animation: successBounce 0.6s ease-out;
+        }
+        
+        @keyframes successBounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        /* Asymmetric layout */
+        .asymmetric-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr 0.8fr;
+            gap: 24px;
+        }
+        
+        @media (max-width: 768px) {
+            .asymmetric-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Subtle color pop */
+        .color-pop {
+            position: relative;
+        }
+        
+        .color-pop::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+            border-radius: 6px 6px 0 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .color-pop:hover::after {
+            opacity: 1;
+        }
+        
+        /* Smooth glow for selected item */
+        .selected-glow {
+            box-shadow: 0 0 0 2px #3b82f6, 0 0 20px rgba(59, 130, 246, 0.2);
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+        }
+        
+        /* Delay classes for staggered animations */
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-6xl mx-auto p-6">
+        <!-- Header -->
+        <div class="text-center mb-16 pt-12">
+            <div class="gentle-fade-in">
+                <h1 class="text-5xl font-light text-gray-800 mb-6 tracking-wide">
+                    投票システム
+                </h1>
+                <p class="text-xl text-gray-600 mb-8">Minimalist Motion Design</p>
+            </div>
+            
+            <div class="gentle-fade-in delay-200 inline-flex items-center bg-white rounded-full px-6 py-3 shadow-sm border">
+                <div class="w-2 h-2 bg-emerald-500 rounded-full breathe mr-3"></div>
+                <span class="text-gray-700 font-medium">Live • 18 participants</span>
+            </div>
+        </div>
+
+        <!-- Question -->
+        <div class="gentle-fade-in delay-300 bg-white rounded-2xl p-8 mb-12 shadow-sm border color-pop micro-hover">
+            <h2 class="text-3xl font-normal text-gray-800 text-center mb-4">
+                今日のランチは？
+            </h2>
+            <p class="text-gray-600 text-center text-lg">
+                お好みの選択肢をクリックして投票してください
+            </p>
+        </div>
+
+        <!-- 投票前 -->
+        <div id="voting" class="asymmetric-grid mb-12">
+            <button onclick="vote('寿司')" 
+                    class="gentle-fade-in delay-400 bg-white rounded-2xl p-8 shadow-sm border micro-hover micro-scale ripple-button color-pop group">
+                <div class="text-center space-y-6">
+                    <div class="text-7xl group-hover:scale-110 transition-transform duration-300 gentle-fade-in delay-500">🍣</div>
+                    <div>
+                        <h3 class="text-2xl font-medium text-gray-800 mb-3">寿司</h3>
+                        <p class="text-gray-600 leading-relaxed mb-6">
+                            新鮮な海の幸を味わう日本の伝統料理
+                        </p>
+                        <div class="flex flex-wrap justify-center gap-2">
+                            <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium micro-hover">和食</span>
+                            <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium micro-hover">高級</span>
+                        </div>
+                    </div>
+                </div>
+            </button>
+
+            <button onclick="vote('ラーメン')" 
+                    class="gentle-fade-in delay-500 bg-white rounded-2xl p-8 shadow-sm border micro-hover micro-scale ripple-button color-pop group">
+                <div class="text-center space-y-6">
+                    <div class="text-7xl group-hover:scale-110 transition-transform duration-300 gentle-fade-in delay-600">🍜</div>
+                    <div>
+                        <h3 class="text-2xl font-medium text-gray-800 mb-3">ラーメン</h3>
+                        <p class="text-gray-600 leading-relaxed mb-6">
+                            温かいスープで心も体も温まる
+                        </p>
+                        <div class="flex flex-wrap justify-center gap-2">
+                            <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium micro-hover">麺類</span>
+                            <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium micro-hover">温かい</span>
+                        </div>
+                    </div>
+                </div>
+            </button>
+
+            <button onclick="vote('パスタ')" 
+                    class="gentle-fade-in delay-600 bg-white rounded-2xl p-8 shadow-sm border micro-hover micro-scale ripple-button color-pop group">
+                <div class="text-center space-y-6">
+                    <div class="text-7xl group-hover:scale-110 transition-transform duration-300 gentle-fade-in delay-700">🍝</div>
+                    <div>
+                        <h3 class="text-2xl font-medium text-gray-800 mb-3">パスタ</h3>
+                        <p class="text-gray-600 leading-relaxed mb-6">
+                            イタリアの味を現代風にアレンジ
+                        </p>
+                        <div class="flex flex-wrap justify-center gap-2">
+                            <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium micro-hover">洋食</span>
+                            <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium micro-hover">多彩</span>
+                        </div>
+                    </div>
+                </div>
+            </button>
+        </div>
+
+        <!-- 投票後 -->
+        <div id="results" class="space-y-6 hidden">
+            <!-- 投票完了通知 -->
+            <div class="gentle-fade-in bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center success-bounce">
+                <div class="w-12 h-12 bg-emerald-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-emerald-800 mb-2">投票完了</h3>
+                <p class="text-emerald-600">結果をリアルタイムで表示しています</p>
+            </div>
+
+            <!-- 結果表示 -->
+            <div class="gentle-slide-in delay-100 bg-white rounded-2xl p-6 shadow-sm border micro-hover">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-4xl">🍣</div>
+                        <div>
+                            <h3 class="text-xl font-medium text-gray-800">寿司</h3>
+                            <p class="text-gray-600">8票 • 1位</p>
+                        </div>
+                        <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium micro-hover">
+                            👑 Winner
+                        </div>
+                    </div>
+                    <div class="text-3xl font-semibold text-blue-600">44%</div>
+                </div>
+                <div class="bg-gray-200 rounded-full h-3">
+                    <div class="progress-smooth h-full" style="width: 44%"></div>
+                </div>
+            </div>
+
+            <div class="gentle-slide-in delay-200 bg-white rounded-2xl p-6 shadow-sm border micro-hover">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-4xl">🍜</div>
+                        <div>
+                            <h3 class="text-xl font-medium text-gray-800">ラーメン</h3>
+                            <p class="text-gray-600">6票</p>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-semibold text-orange-600">33%</div>
+                </div>
+                <div class="bg-gray-200 rounded-full h-3">
+                    <div class="bg-gradient-to-r from-orange-500 to-red-500 rounded-full h-full transition-all duration-1000" style="width: 33%"></div>
+                </div>
+            </div>
+
+            <div class="gentle-slide-in delay-300 selected-glow rounded-2xl p-6 micro-hover">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-4xl">🍝</div>
+                        <div>
+                            <h3 class="text-xl font-medium text-gray-800">パスタ</h3>
+                            <p class="text-gray-600">4票</p>
+                        </div>
+                        <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium micro-hover">
+                            ✓ あなたの選択
+                        </div>
+                    </div>
+                    <div class="text-3xl font-semibold text-emerald-600">23%</div>
+                </div>
+                <div class="bg-gray-200 rounded-full h-3">
+                    <div class="bg-gradient-to-r from-emerald-500 to-green-500 rounded-full h-full transition-all duration-1000" style="width: 23%"></div>
+                </div>
+            </div>
+
+            <!-- 統計情報 -->
+            <div class="gentle-fade-in delay-400 bg-white rounded-2xl p-8 shadow-sm border">
+                <h3 class="text-xl font-medium text-gray-800 text-center mb-8">投票結果サマリー</h3>
+                <div class="grid grid-cols-3 gap-6 text-center">
+                    <div class="micro-hover">
+                        <div class="text-3xl font-light text-gray-800 mb-2">18</div>
+                        <div class="text-gray-600">総投票数</div>
+                    </div>
+                    <div class="micro-hover">
+                        <div class="text-3xl mb-2">🥇</div>
+                        <div class="text-gray-600">寿司が勝利</div>
+                    </div>
+                    <div class="micro-hover">
+                        <div class="flex items-center justify-center space-x-2 mb-2">
+                            <div class="w-2 h-2 bg-emerald-500 rounded-full breathe"></div>
+                            <span class="text-lg font-medium text-gray-800">Live</span>
+                        </div>
+                        <div class="text-gray-600">リアルタイム更新</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function vote(choice) {
+            document.getElementById('voting').classList.add('hidden');
+            document.getElementById('results').classList.remove('hidden');
+            
+            // Smooth scroll to results with offset
+            setTimeout(() => {
+                document.getElementById('results').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }, 100);
+        }
+
+        // Add purposeful micro-interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Stagger animations on load
+            const elements = document.querySelectorAll('.gentle-fade-in, .gentle-slide-in');
+            elements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.1}s`;
+            });
+
+            // Context-aware button feedback
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    // Create temporary feedback element
+                    const feedback = document.createElement('div');
+                    feedback.className = 'absolute inset-0 bg-blue-500 opacity-20 rounded-2xl pointer-events-none';
+                    feedback.style.animation = 'pulse 0.3s ease-out';
+                    
+                    const rect = this.getBoundingClientRect();
+                    feedback.style.position = 'fixed';
+                    feedback.style.top = rect.top + 'px';
+                    feedback.style.left = rect.left + 'px';
+                    feedback.style.width = rect.width + 'px';
+                    feedback.style.height = rect.height + 'px';
+                    
+                    document.body.appendChild(feedback);
+                    
+                    setTimeout(() => {
+                        feedback.remove();
+                    }, 300);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

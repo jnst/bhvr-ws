@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>投票システム</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#4F46E5',
+                        'primary-dark': '#3730A3',
+                        'accent': '#F59E0B',
+                        'success': '#10B981',
+                        'info': '#3B82F6',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'Hiragino Sans', 'Noto Sans JP', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen font-sans">
+    <div class="max-w-3xl mx-auto p-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+                    投票システム
+                </h1>
+                <p class="text-slate-600 mt-1">リアルタイム投票プラットフォーム</p>
+            </div>
+            <button onclick="location.href='create-poll.html'" 
+                    class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-semibold 
+                           shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200
+                           flex items-center space-x-2">
+                <span>✨</span>
+                <span>新しい投票を作成</span>
+            </button>
+        </div>
+
+        <!-- 投票カード -->
+        <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 overflow-hidden">
+            <div class="bg-gradient-to-r from-primary/10 to-accent/10 px-8 py-6 border-b border-slate-200/50">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">今日のランチは？</h2>
+                <div class="flex items-center space-x-4 text-sm text-slate-600">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+                        <span>進行中</span>
+                    </div>
+                    <span>•</span>
+                    <span>チーム投票</span>
+                </div>
+            </div>
+            
+            <div class="p-8">
+                <!-- 投票前の状態 -->
+                <div id="voting-state" class="space-y-4">
+                    <div class="text-center mb-6">
+                        <p class="text-slate-600">選択肢から一つを選んでください</p>
+                    </div>
+                    
+                    <button onclick="vote('寿司')" 
+                            class="group w-full p-6 bg-gradient-to-r from-slate-50 to-slate-100 
+                                   hover:from-primary/5 hover:to-primary/10 
+                                   border-2 border-slate-200 hover:border-primary/30 
+                                   rounded-xl transition-all duration-300 
+                                   hover:shadow-lg hover:-translate-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-semibold text-slate-800 group-hover:text-primary">🍣 寿司</span>
+                            <div class="w-8 h-8 border-2 border-slate-300 group-hover:border-primary 
+                                        rounded-full flex items-center justify-center 
+                                        group-hover:bg-primary group-hover:text-white transition-all">
+                                ›
+                            </div>
+                        </div>
+                    </button>
+
+                    <button onclick="vote('ラーメン')" 
+                            class="group w-full p-6 bg-gradient-to-r from-slate-50 to-slate-100 
+                                   hover:from-info/5 hover:to-info/10 
+                                   border-2 border-slate-200 hover:border-info/30 
+                                   rounded-xl transition-all duration-300 
+                                   hover:shadow-lg hover:-translate-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-semibold text-slate-800 group-hover:text-info">🍜 ラーメン</span>
+                            <div class="w-8 h-8 border-2 border-slate-300 group-hover:border-info 
+                                        rounded-full flex items-center justify-center 
+                                        group-hover:bg-info group-hover:text-white transition-all">
+                                ›
+                            </div>
+                        </div>
+                    </button>
+
+                    <button onclick="vote('パスタ')" 
+                            class="group w-full p-6 bg-gradient-to-r from-slate-50 to-slate-100 
+                                   hover:from-accent/5 hover:to-accent/10 
+                                   border-2 border-slate-200 hover:border-accent/30 
+                                   rounded-xl transition-all duration-300 
+                                   hover:shadow-lg hover:-translate-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-semibold text-slate-800 group-hover:text-accent">🍝 パスタ</span>
+                            <div class="w-8 h-8 border-2 border-slate-300 group-hover:border-accent 
+                                        rounded-full flex items-center justify-center 
+                                        group-hover:bg-accent group-hover:text-white transition-all">
+                                ›
+                            </div>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- 投票後の結果表示 -->
+                <div id="results-state" class="space-y-4 hidden">
+                    <div class="text-center mb-6">
+                        <p class="text-slate-600">投票結果</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="font-semibold text-slate-800">🍣 寿司</span>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-sm text-slate-600">8票</span>
+                                    <span class="px-2 py-1 bg-primary/10 text-primary text-sm font-semibold rounded-full">44%</span>
+                                </div>
+                            </div>
+                            <div class="w-full bg-slate-200 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-primary to-primary-dark h-full rounded-full transition-all duration-1000" style="width: 44%"></div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="font-semibold text-slate-800">🍜 ラーメン</span>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-sm text-slate-600">6票</span>
+                                    <span class="px-2 py-1 bg-info/10 text-info text-sm font-semibold rounded-full">33%</span>
+                                </div>
+                            </div>
+                            <div class="w-full bg-slate-200 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-info to-blue-600 h-full rounded-full transition-all duration-1000" style="width: 33%"></div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-gradient-to-r from-accent/5 to-accent/10 rounded-xl border-2 border-accent/20 
+                                    shadow-lg ring-2 ring-accent/20">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="font-semibold text-slate-800">🍝 パスタ ✨</span>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-sm text-slate-600">5票</span>
+                                    <span class="px-2 py-1 bg-accent/20 text-accent text-sm font-bold rounded-full">28%</span>
+                                    <span class="text-accent font-bold">あなたの投票</span>
+                                </div>
+                            </div>
+                            <div class="w-full bg-slate-200 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-accent to-orange-600 h-full rounded-full transition-all duration-1000" style="width: 28%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-slate-200">
+                        <div class="flex items-center justify-between text-sm">
+                            <div class="flex items-center space-x-4 text-slate-600">
+                                <span>📊 総投票数: <strong class="text-slate-800">19票</strong></span>
+                                <span>•</span>
+                                <span>あなたの投票: <strong id="user-vote" class="text-accent"></strong></span>
+                            </div>
+                            <div class="flex items-center space-x-2 text-success">
+                                <div class="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+                                <span class="font-medium">リアルタイム更新</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function vote(choice) {
+            // 投票前→投票後の状態切り替え
+            document.getElementById('voting-state').classList.add('hidden');
+            document.getElementById('results-state').classList.remove('hidden');
+            document.getElementById('user-vote').textContent = choice;
+            
+            // 成功通知（モダンなスタイル）
+            showNotification(`${choice}に投票しました！`, 'success');
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-xl shadow-lg border z-50 
+                                    ${type === 'success' ? 'bg-success text-white border-success' : 'bg-slate-800 text-white border-slate-700'}
+                                    transform translate-x-full transition-transform duration-300`;
+            notification.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <span>${type === 'success' ? '✅' : '📝'}</span>
+                    <span class="font-medium">${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // アニメーション
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            // 自動削除
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tall Cards 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .tall-card {
+            height: 28rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .tall-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+        .pulse-button {
+            animation: pulseGlow 2s infinite;
+        }
+        @keyframes pulseGlow {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+            }
+            50% { 
+                box-shadow: 0 0 30px rgba(59, 130, 246, 0.6);
+            }
+        }
+        .micro-bounce {
+            transition: transform 0.2s ease-in-out;
+        }
+        .micro-bounce:hover {
+            transform: scale(1.05);
+        }
+        .progress-shimmer {
+            background: linear-gradient(90deg, 
+                rgba(59, 130, 246, 0.8) 0%, 
+                rgba(147, 197, 253, 0.8) 50%, 
+                rgba(59, 130, 246, 0.8) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 min-h-screen">
+    <div class="max-w-5xl mx-auto p-6">
+        <!-- Header -->
+        <div class="text-center mb-8 pt-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">投票システム 2025</h1>
+            <p class="text-gray-600 text-lg">Tall Card Interface Design</p>
+            <div class="inline-flex items-center mt-4 px-4 py-2 bg-blue-100 rounded-full">
+                <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse mr-2"></div>
+                <span class="text-blue-700 font-medium text-sm">Live • 18 participants</span>
+            </div>
+        </div>
+
+        <!-- Question -->
+        <div class="bg-white rounded-3xl p-8 mb-8 shadow-lg border border-gray-100">
+            <h2 class="text-2xl font-semibold text-gray-800 text-center mb-3">
+                今日のランチは？
+            </h2>
+            <p class="text-gray-600 text-center">
+                お気に入りの選択肢をクリックして投票してください
+            </p>
+        </div>
+
+        <!-- 投票前 - Tall Cards -->
+        <div id="voting" class="grid md:grid-cols-3 gap-8">
+            <button onclick="vote('寿司')" 
+                    class="tall-card bg-white rounded-3xl p-8 shadow-lg border border-gray-100 flex flex-col justify-between group">
+                <div class="text-center">
+                    <div class="text-8xl mb-6 group-hover:scale-110 transition-transform duration-300">🍣</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">寿司</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        新鮮な海の幸を味わう日本の伝統料理。
+                        職人の技が光る繊細な味わいをお楽しみください。
+                    </p>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex justify-center space-x-2">
+                        <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">和食</span>
+                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">高級</span>
+                    </div>
+                    <div class="micro-bounce bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-2xl py-4 font-semibold text-center">
+                        選択する
+                    </div>
+                </div>
+            </button>
+
+            <button onclick="vote('ラーメン')" 
+                    class="tall-card bg-white rounded-3xl p-8 shadow-lg border border-gray-100 flex flex-col justify-between group">
+                <div class="text-center">
+                    <div class="text-8xl mb-6 group-hover:scale-110 transition-transform duration-300">🍜</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">ラーメン</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        温かいスープと麺の絶妙なハーモニー。
+                        心も体も温まる日本のソウルフードです。
+                    </p>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex justify-center space-x-2">
+                        <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">麺類</span>
+                        <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">温かい</span>
+                    </div>
+                    <div class="micro-bounce bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-2xl py-4 font-semibold text-center">
+                        選択する
+                    </div>
+                </div>
+            </button>
+
+            <button onclick="vote('パスタ')" 
+                    class="tall-card bg-white rounded-3xl p-8 shadow-lg border border-gray-100 flex flex-col justify-between group">
+                <div class="text-center">
+                    <div class="text-8xl mb-6 group-hover:scale-110 transition-transform duration-300">🍝</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">パスタ</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        イタリアの伝統的な味を現代風にアレンジ。
+                        豊富なソースとトッピングで楽しめます。
+                    </p>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex justify-center space-x-2">
+                        <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">洋食</span>
+                        <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">多彩</span>
+                    </div>
+                    <div class="micro-bounce bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl py-4 font-semibold text-center">
+                        選択する
+                    </div>
+                </div>
+            </button>
+        </div>
+
+        <!-- 投票後 -->
+        <div id="results" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-8 shadow-lg border border-gray-100">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-4xl">🍣</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">寿司</h3>
+                            <p class="text-gray-600">8票 • 1位</p>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-bold text-blue-600">44%</div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-4">
+                    <div class="progress-shimmer h-full rounded-full transition-all duration-1000" style="width: 44%"></div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl p-8 shadow-lg border border-gray-100">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-4xl">🍜</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">ラーメン</h3>
+                            <p class="text-gray-600">6票</p>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-bold text-orange-600">33%</div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-4">
+                    <div class="bg-gradient-to-r from-orange-500 to-red-500 h-full rounded-full transition-all duration-1000" style="width: 33%"></div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl p-8 shadow-lg border border-green-200 bg-green-50">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-4xl">🍝</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">パスタ</h3>
+                            <p class="text-gray-600">4票</p>
+                        </div>
+                        <div class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                            あなたの選択
+                        </div>
+                    </div>
+                    <div class="text-3xl font-bold text-green-600">23%</div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-4">
+                    <div class="bg-gradient-to-r from-green-500 to-emerald-500 h-full rounded-full transition-all duration-1000" style="width: 23%"></div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="bg-white rounded-3xl p-8 shadow-lg border border-gray-100">
+                <div class="grid grid-cols-3 gap-6 text-center">
+                    <div class="pulse-button bg-blue-50 rounded-2xl p-6">
+                        <div class="text-3xl font-bold text-blue-600 mb-2">18</div>
+                        <div class="text-gray-600 font-medium">総投票数</div>
+                    </div>
+                    <div class="bg-green-50 rounded-2xl p-6">
+                        <div class="text-3xl font-bold text-green-600 mb-2">🥇</div>
+                        <div class="text-gray-600 font-medium">寿司が勝利</div>
+                    </div>
+                    <div class="bg-purple-50 rounded-2xl p-6">
+                        <div class="flex items-center justify-center space-x-2 mb-2">
+                            <div class="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
+                            <span class="text-xl font-bold text-purple-600">Live</span>
+                        </div>
+                        <div class="text-gray-600 font-medium">リアルタイム更新</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function vote(choice) {
+            document.getElementById('voting').classList.add('hidden');
+            document.getElementById('results').classList.remove('hidden');
+            
+            // Smooth scroll to results
+            document.getElementById('results').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+    </script>
+</body>
+</html>

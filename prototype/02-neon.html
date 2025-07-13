@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ネオン投票</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        .neon-text { text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor; }
+        .neon-border { box-shadow: 0 0 10px currentColor, inset 0 0 10px currentColor; }
+        .scanlines { background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.1) 2px, rgba(0,255,255,0.1) 4px); }
+    </style>
+</head>
+<body class="bg-black min-h-screen text-cyan-400 font-mono scanlines">
+    <div class="max-w-2xl mx-auto p-8">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-black neon-text text-cyan-400 mb-4" style="font-family: 'Orbitron', monospace;">
+                VOTE.EXE
+            </h1>
+            <div class="text-pink-500 text-lg neon-text">
+                > 今日のランチは？
+            </div>
+        </div>
+
+        <!-- 投票前 -->
+        <div id="voting" class="space-y-6">
+            <button onclick="vote('寿司')" 
+                    class="w-full p-6 bg-transparent border-2 border-cyan-400 text-cyan-400 
+                           hover:bg-cyan-400 hover:text-black transition-all duration-300
+                           neon-border text-xl font-bold uppercase tracking-wider">
+                [1] 寿司.JPG
+            </button>
+            <button onclick="vote('ラーメン')" 
+                    class="w-full p-6 bg-transparent border-2 border-pink-500 text-pink-500 
+                           hover:bg-pink-500 hover:text-black transition-all duration-300
+                           neon-border text-xl font-bold uppercase tracking-wider">
+                [2] ラーメン.EXE
+            </button>
+            <button onclick="vote('パスタ')" 
+                    class="w-full p-6 bg-transparent border-2 border-green-400 text-green-400 
+                           hover:bg-green-400 hover:text-black transition-all duration-300
+                           neon-border text-xl font-bold uppercase tracking-wider">
+                [3] パスタ.DLL
+            </button>
+        </div>
+
+        <!-- 投票後 -->
+        <div id="results" class="space-y-6 hidden">
+            <div class="border border-cyan-400 p-4 bg-cyan-400/10">
+                <div class="flex justify-between mb-2">
+                    <span class="text-cyan-400 font-bold">[1] 寿司.JPG</span>
+                    <span class="text-cyan-400 neon-text">44%</span>
+                </div>
+                <div class="w-full bg-gray-800 h-3 border border-cyan-400">
+                    <div class="bg-cyan-400 h-full neon-border" style="width: 44%"></div>
+                </div>
+            </div>
+            
+            <div class="border border-pink-500 p-4 bg-pink-500/10">
+                <div class="flex justify-between mb-2">
+                    <span class="text-pink-500 font-bold">[2] ラーメン.EXE</span>
+                    <span class="text-pink-500 neon-text">33%</span>
+                </div>
+                <div class="w-full bg-gray-800 h-3 border border-pink-500">
+                    <div class="bg-pink-500 h-full neon-border" style="width: 33%"></div>
+                </div>
+            </div>
+            
+            <div class="border-2 border-green-400 p-4 bg-green-400/20 neon-border">
+                <div class="flex justify-between mb-2">
+                    <span class="text-green-400 font-bold neon-text">[3] パスタ.DLL >>> SELECTED</span>
+                    <span class="text-green-400 neon-text">23%</span>
+                </div>
+                <div class="w-full bg-gray-800 h-3 border border-green-400">
+                    <div class="bg-green-400 h-full neon-border" style="width: 23%"></div>
+                </div>
+            </div>
+            
+            <div class="text-center text-cyan-400 text-sm mt-8">
+                <div class="neon-text">TOTAL_VOTES: 18</div>
+                <div class="text-green-400 mt-2">STATUS: CONNECTED</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function vote(choice) {
+            document.getElementById('voting').classList.add('hidden');
+            document.getElementById('results').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

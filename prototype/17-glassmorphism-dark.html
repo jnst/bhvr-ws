@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glassmorphism Dark 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 60%),
+                radial-gradient(circle at 80% 40%, rgba(236, 72, 153, 0.15) 0%, transparent 60%),
+                radial-gradient(circle at 40% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 60%),
+                linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+        }
+        
+        .glass-dark {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(148, 163, 184, 0.1);
+        }
+        
+        .glass-dark-strong {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(148, 163, 184, 0.2);
+        }
+        
+        .glass-dark-button {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-dark-button:hover {
+            background: rgba(30, 41, 59, 0.7);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(148, 163, 184, 0.3);
+        }
+        
+        .glass-dark-result {
+            background: rgba(15, 23, 42, 0.3);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+        }
+        
+        .glass-dark-selected {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            box-shadow: 
+                0 8px 32px rgba(16, 185, 129, 0.1),
+                inset 0 1px 0 rgba(16, 185, 129, 0.2);
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .glow-text-dark {
+            text-shadow: 0 0 20px rgba(148, 163, 184, 0.6);
+        }
+        
+        .progress-glass-dark {
+            background: linear-gradient(90deg, 
+                rgba(99, 102, 241, 0.8) 0%, 
+                rgba(147, 197, 253, 0.9) 50%, 
+                rgba(99, 102, 241, 0.8) 100%);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 
+                inset 0 1px 0 rgba(148, 163, 184, 0.3),
+                0 0 20px rgba(99, 102, 241, 0.4);
+        }
+        
+        .dark-accent-blue {
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: #a5b4fc;
+        }
+        
+        .dark-accent-emerald {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #6ee7b7;
+        }
+        
+        .dark-accent-pink {
+            background: rgba(236, 72, 153, 0.2);
+            border: 1px solid rgba(236, 72, 153, 0.4);
+            color: #f9a8d4;
+        }
+        
+        .dark-neon-glow {
+            box-shadow: 
+                0 0 5px currentColor,
+                0 0 10px currentColor,
+                0 0 15px currentColor;
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Background Elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-20 left-20 w-32 h-32 glass-dark rounded-full floating" style="animation-delay: 0s;"></div>
+        <div class="absolute top-40 right-32 w-24 h-24 glass-dark rounded-full floating" style="animation-delay: 2s;"></div>
+        <div class="absolute bottom-32 left-40 w-20 h-20 glass-dark rounded-full floating" style="animation-delay: 4s;"></div>
+        <div class="absolute bottom-20 right-20 w-28 h-28 glass-dark rounded-full floating" style="animation-delay: 1s;"></div>
+    </div>
+
+    <div class="relative z-10 max-w-4xl mx-auto p-6">
+        <!-- Header -->
+        <div class="text-center mb-12 pt-8">
+            <div class="glass-dark-strong rounded-3xl p-8 mb-8">
+                <h1 class="text-4xl font-bold text-slate-100 glow-text-dark mb-4">
+                    投票システム 2025
+                </h1>
+                <p class="text-slate-300 text-lg mb-6">Dark Glassmorphism Interface</p>
+                <div class="glass-dark rounded-full px-6 py-3 inline-block">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-3 h-3 bg-emerald-400 rounded-full animate-pulse shadow-lg dark-neon-glow"></div>
+                        <span class="text-slate-200 font-medium">Live • 18 participants active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question -->
+        <div class="glass-dark-strong rounded-3xl p-8 mb-10">
+            <h2 class="text-3xl font-semibold text-slate-100 text-center mb-4 glow-text-dark">
+                今日のランチは？
+            </h2>
+            <p class="text-slate-300 text-center text-lg">
+                お好みの選択肢をクリックして投票してください
+            </p>
+        </div>
+
+        <!-- 投票前 -->
+        <div id="voting" class="space-y-6">
+            <button onclick="vote('寿司')" 
+                    class="w-full glass-dark-button rounded-2xl p-8 group">
+                <div class="flex items-center space-x-6">
+                    <div class="text-6xl group-hover:scale-110 transition-transform duration-300">🍣</div>
+                    <div class="flex-1 text-left">
+                        <h3 class="text-2xl font-bold text-slate-100 mb-3 glow-text-dark">寿司</h3>
+                        <p class="text-slate-300 mb-4 leading-relaxed">
+                            新鮮な海の幸を使用した日本の伝統料理。職人の技が光る繊細な味わい。
+                        </p>
+                        <div class="flex space-x-2">
+                            <span class="glass-dark rounded-full px-3 py-1 text-sm text-slate-300 font-medium border border-slate-500/30">和食</span>
+                            <span class="glass-dark rounded-full px-3 py-1 text-sm text-slate-300 font-medium border border-slate-500/30">高級</span>
+                            <span class="glass-dark rounded-full px-3 py-1 text-sm text-slate-300 font-medium border border-slate-500/30">ヘルシー</span>
+                        </div>
+                    </div>
+                    <div class="glass-dark rounded-full p-4">
+                        <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </button>
+
+            <button onclick="vote('ラーメン')" 
+                    class="w-full glass-dark-button rounded-2xl p-8 group">
+                <div class="flex items-center space-x-6">
+                    <div class="text-6xl group-hover:scale-110 transition-transform duration-300">🍜</div>
+                    <div class="flex-1 text-left">
+                        <h3 class="text-2xl font-bold text-slate-100 mb-3 glow-text-dark">ラーメン</h3>
+                        <p class="text-slate-300 mb-4 leading-relaxed">
+                            温かいスープと麺の絶妙なハーモニー。心も体も温まるソウルフード。
+                        </p>
+                        <div class="flex space-x-2">
+                            <span class="glass-dark rounded-full px-3 py-1 text-sm text-slate-300 font-medium border border-slate-500/30">麺類</span>
+                            <span class="glass-dark rounded-full px-3 py-1 text-sm text-slate-300 font-medium border border-slate-500/30">温かい</span>
+                            <span class="glass-dark rounded-full px-3 py-1 text-sm text-slate-300 font-medium border border-slate-500/30">カジュアル</span>
+                        </div>
+                    </div>
+                    <div class="glass-dark rounded-full p-4">
+                        <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </button>
+
+            <button onclick="vote('パスタ')" 
+                    class="w-full glass-dark-button rounded-2xl p-8 group">
+                <div class="flex items-center space-x-6">
+                    <div class="text-6xl group-hover:scale-110 transition-transform duration-300">🍝</div>
+                    <div class="flex-1 text-left">
+                        <h3 class="text-2xl font-bold text-slate-100 mb-3 glow-text-dark">パスタ</h3>
+                        <p class="text-slate-300 mb-4 leading-relaxed">
+                            イタリアの伝統的な味を現代風にアレンジ。豊富なバリエーションが魅力。
+                        </p>
+                        <div class="flex space-x-2">
+                            <span class="glass-dark rounded-full px-3 py-1 text-sm text-slate-300 font-medium border border-slate-500/30">洋食</span>
+                            <span class="glass-dark rounded-full px-3 py-1 text-sm text-slate-300 font-medium border border-slate-500/30">多彩</span>
+                            <span class="glass-dark rounded-full px-3 py-1 text-sm text-slate-300 font-medium border border-slate-500/30">おしゃれ</span>
+                        </div>
+                    </div>
+                    <div class="glass-dark rounded-full p-4">
+                        <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </button>
+        </div>
+
+        <!-- 投票後 -->
+        <div id="results" class="space-y-6 hidden">
+            <!-- 投票完了通知 -->
+            <div class="glass-dark-strong rounded-3xl p-6 text-center">
+                <div class="text-emerald-400 mb-3 dark-neon-glow">
+                    <svg class="w-12 h-12 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-100 mb-2 glow-text-dark">投票完了</h3>
+                <p class="text-slate-300">リアルタイムで結果を表示しています</p>
+            </div>
+
+            <!-- 結果表示 -->
+            <div class="glass-dark-result rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-4xl">🍣</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-100 glow-text-dark">寿司</h3>
+                            <p class="text-slate-300">8票 • 1位</p>
+                        </div>
+                        <div class="dark-accent-blue rounded-full px-3 py-1">
+                            <span class="text-sm font-bold">👑 Winner</span>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-bold text-slate-100 glow-text-dark">44%</div>
+                </div>
+                <div class="glass-dark rounded-full h-3 p-0.5">
+                    <div class="progress-glass-dark h-full rounded-full transition-all duration-1000" style="width: 44%"></div>
+                </div>
+            </div>
+
+            <div class="glass-dark-result rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-4xl">🍜</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-100 glow-text-dark">ラーメン</h3>
+                            <p class="text-slate-300">6票</p>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-bold text-slate-100 glow-text-dark">33%</div>
+                </div>
+                <div class="glass-dark rounded-full h-3 p-0.5">
+                    <div class="bg-gradient-to-r from-orange-400 to-red-400 h-full rounded-full transition-all duration-1000 backdrop-blur-sm" style="width: 33%"></div>
+                </div>
+            </div>
+
+            <div class="glass-dark-selected rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-4xl">🍝</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-100 glow-text-dark">パスタ</h3>
+                            <p class="text-slate-300">4票</p>
+                        </div>
+                        <div class="dark-accent-emerald rounded-full px-3 py-1">
+                            <span class="text-sm font-bold">✓ あなたの選択</span>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-bold text-slate-100 glow-text-dark">23%</div>
+                </div>
+                <div class="glass-dark rounded-full h-3 p-0.5">
+                    <div class="bg-gradient-to-r from-emerald-400 to-green-400 h-full rounded-full transition-all duration-1000 backdrop-blur-sm" style="width: 23%"></div>
+                </div>
+            </div>
+
+            <!-- 統計情報 -->
+            <div class="glass-dark-strong rounded-3xl p-8">
+                <div class="grid grid-cols-3 gap-6 text-center">
+                    <div class="glass-dark rounded-2xl p-6">
+                        <div class="text-3xl font-bold text-slate-100 mb-3 glow-text-dark">18</div>
+                        <div class="text-slate-300">総投票数</div>
+                    </div>
+                    <div class="glass-dark rounded-2xl p-6">
+                        <div class="text-3xl font-bold text-slate-100 mb-3 glow-text-dark">🥇</div>
+                        <div class="text-slate-300">寿司が勝利</div>
+                    </div>
+                    <div class="glass-dark rounded-2xl p-6">
+                        <div class="flex items-center justify-center space-x-2 mb-3">
+                            <div class="w-3 h-3 bg-emerald-400 rounded-full animate-pulse shadow-lg dark-neon-glow"></div>
+                            <span class="text-xl font-bold text-slate-100 glow-text-dark">Live</span>
+                        </div>
+                        <div class="text-slate-300">リアルタイム更新</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function vote(choice) {
+            document.getElementById('voting').classList.add('hidden');
+            document.getElementById('results').classList.remove('hidden');
+            
+            // Smooth scroll to results
+            document.getElementById('results').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+    </script>
+</body>
+</html>

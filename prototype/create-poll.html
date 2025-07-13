@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>投票作成 - 投票システム</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#4F46E5',
+                        'primary-dark': '#3730A3',
+                        'accent': '#F59E0B',
+                        'success': '#10B981',
+                        'info': '#3B82F6',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'Hiragino Sans', 'Noto Sans JP', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen font-sans">
+    <div class="max-w-3xl mx-auto p-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+                    新しい投票を作成
+                </h1>
+                <p class="text-slate-600 mt-1">リアルタイム投票を設定しましょう</p>
+            </div>
+            <button onclick="location.href='vote-poll.html'" 
+                    class="text-slate-600 hover:text-slate-800 p-2 rounded-lg hover:bg-white/50 transition-all">
+                ← 戻る
+            </button>
+        </div>
+
+        <!-- 作成フォーム -->
+        <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 overflow-hidden">
+            <div class="bg-gradient-to-r from-primary/10 to-accent/10 px-8 py-6 border-b border-slate-200/50">
+                <h2 class="text-xl font-bold text-slate-800 mb-1">投票設定</h2>
+                <p class="text-slate-600 text-sm">参加者が選択できる項目を設定してください</p>
+            </div>
+            
+            <div class="p-8">
+                <form class="space-y-8">
+                    <!-- タイトル入力 -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-3">
+                            📝 投票タイトル
+                        </label>
+                        <input type="text" 
+                               placeholder="例: 今日のランチはどこにしますか？" 
+                               class="w-full px-4 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl 
+                                      focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary
+                                      transition-all duration-200 text-lg font-medium">
+                    </div>
+                    
+                    <!-- 選択肢入力 -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-3">
+                            🎯 選択肢
+                        </label>
+                        <div class="space-y-3" id="options-container">
+                            <div class="relative">
+                                <input type="text" 
+                                       placeholder="選択肢 1" 
+                                       class="w-full px-4 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl 
+                                              focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary
+                                              transition-all duration-200 font-medium">
+                                <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400">
+                                    🥗
+                                </div>
+                            </div>
+                            
+                            <div class="relative">
+                                <input type="text" 
+                                       placeholder="選択肢 2" 
+                                       class="w-full px-4 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl 
+                                              focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary
+                                              transition-all duration-200 font-medium">
+                                <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400">
+                                    🍜
+                                </div>
+                            </div>
+                            
+                            <div id="additional-options"></div>
+                            
+                            <button type="button" 
+                                    id="add-option" 
+                                    class="w-full py-4 border-2 border-dashed border-slate-300 rounded-xl 
+                                           text-slate-500 hover:border-primary hover:text-primary hover:bg-primary/5
+                                           transition-all duration-200 font-medium group">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <div class="w-6 h-6 border border-current rounded-full flex items-center justify-center 
+                                                group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all">
+                                        +
+                                    </div>
+                                    <span>選択肢を追加</span>
+                                </div>
+                            </button>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-2">最低2つの選択肢が必要です</p>
+                    </div>
+                    
+                    <!-- アクションボタン -->
+                    <div class="flex space-x-4 pt-6">
+                        <button type="button" 
+                                onclick="location.href='vote-poll.html'" 
+                                class="flex-1 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl 
+                                       font-semibold transition-all duration-200 border-2 border-transparent 
+                                       hover:border-slate-300">
+                            キャンセル
+                        </button>
+                        <button type="submit" 
+                                class="flex-1 py-4 bg-gradient-to-r from-primary to-primary-dark 
+                                       hover:from-primary-dark hover:to-primary text-white rounded-xl 
+                                       font-semibold shadow-lg hover:shadow-xl 
+                                       transform hover:-translate-y-0.5 transition-all duration-200
+                                       flex items-center justify-center space-x-2">
+                            <span>🚀</span>
+                            <span>投票を作成</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let optionCount = 2;
+        const emojis = ['🍕', '🍔', '🌮', '🍱', '🍝', '🍜', '🍖', '🥪', '🍗', '🥙'];
+        
+        document.getElementById('add-option').addEventListener('click', function() {
+            optionCount++;
+            const container = document.getElementById('additional-options');
+            
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'relative';
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = `選択肢 ${optionCount}`;
+            input.className = `w-full px-4 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl 
+                              focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary
+                              transition-all duration-200 font-medium`;
+            
+            const emoji = document.createElement('div');
+            emoji.className = 'absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400';
+            emoji.textContent = emojis[(optionCount - 1) % emojis.length];
+            
+            optionDiv.appendChild(input);
+            optionDiv.appendChild(emoji);
+            container.appendChild(optionDiv);
+        });
+
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // 成功通知
+            showNotification('投票が作成されました！', 'success');
+            
+            // 画面遷移
+            setTimeout(() => {
+                location.href = 'vote-poll.html';
+            }, 1500);
+        });
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-xl shadow-lg border z-50 
+                                    ${type === 'success' ? 'bg-success text-white border-success' : 'bg-slate-800 text-white border-slate-700'}
+                                    transform translate-x-full transition-transform duration-300`;
+            notification.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <span>${type === 'success' ? '✅' : '📝'}</span>
+                    <span class="font-medium">${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

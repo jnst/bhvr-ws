@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Material投票</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'material-blue': '#1976d2',
+                        'material-blue-dark': '#1565c0',
+                        'material-teal': '#00796b',
+                        'material-orange': '#f57c00',
+                        'material-purple': '#7b1fa2',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-shadow {
+            box-shadow: 
+                0 2px 4px rgba(0,0,0,0.12),
+                0 2px 4px rgba(0,0,0,0.24);
+        }
+        .material-shadow-hover {
+            box-shadow: 
+                0 4px 8px rgba(0,0,0,0.16),
+                0 4px 8px rgba(0,0,0,0.23);
+        }
+        .material-shadow-active {
+            box-shadow: 
+                0 8px 16px rgba(0,0,0,0.19),
+                0 8px 16px rgba(0,0,0,0.23);
+        }
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+        .ripple::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        .ripple:active::before {
+            width: 300px;
+            height: 300px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-4xl mx-auto p-6">
+        <!-- App Bar -->
+        <div class="bg-material-blue material-shadow rounded-lg mb-8 overflow-hidden">
+            <div class="px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-medium text-white">投票システム</h1>
+                        <p class="text-blue-100 text-sm mt-1">リアルタイム投票プラットフォーム</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                        <span class="text-white text-sm font-medium">オンライン</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Card -->
+        <div class="bg-white material-shadow rounded-lg mb-8 overflow-hidden">
+            <div class="px-6 py-6">
+                <h2 class="text-xl font-medium text-gray-800 mb-2">今日のランチは？</h2>
+                <p class="text-gray-600 text-sm">以下の選択肢から一つを選んでください</p>
+            </div>
+            <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
+                <div class="flex items-center space-x-4 text-sm text-gray-600">
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        <span>チーム投票</span>
+                    </div>
+                    <span>•</span>
+                    <span>作成者: 田中</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 投票前 -->
+        <div id="voting" class="space-y-4">
+            <button onclick="vote('寿司')" 
+                    class="w-full bg-white material-shadow hover:material-shadow-hover 
+                           rounded-lg p-6 transition-all duration-200 ripple">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                        <span class="text-3xl">🍣</span>
+                    </div>
+                    <div class="flex-1 text-left">
+                        <h3 class="text-lg font-medium text-gray-900 mb-1">寿司</h3>
+                        <p class="text-gray-600 text-sm">新鮮な海の幸を味わう和食の代表</p>
+                        <div class="mt-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            和食
+                        </div>
+                    </div>
+                    <div class="text-gray-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </button>
+            
+            <button onclick="vote('ラーメン')" 
+                    class="w-full bg-white material-shadow hover:material-shadow-hover 
+                           rounded-lg p-6 transition-all duration-200 ripple">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
+                        <span class="text-3xl">🍜</span>
+                    </div>
+                    <div class="flex-1 text-left">
+                        <h3 class="text-lg font-medium text-gray-900 mb-1">ラーメン</h3>
+                        <p class="text-gray-600 text-sm">温かいスープで心も体も温まる</p>
+                        <div class="mt-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                            麺類
+                        </div>
+                    </div>
+                    <div class="text-gray-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </button>
+            
+            <button onclick="vote('パスタ')" 
+                    class="w-full bg-white material-shadow hover:material-shadow-hover 
+                           rounded-lg p-6 transition-all duration-200 ripple">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                        <span class="text-3xl">🍝</span>
+                    </div>
+                    <div class="flex-1 text-left">
+                        <h3 class="text-lg font-medium text-gray-900 mb-1">パスタ</h3>
+                        <p class="text-gray-600 text-sm">イタリアの伝統的な味を楽しもう</p>
+                        <div class="mt-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            洋食
+                        </div>
+                    </div>
+                    <div class="text-gray-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </button>
+        </div>
+
+        <!-- 投票後 -->
+        <div id="results" class="space-y-4 hidden">
+            <div class="bg-white material-shadow rounded-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                            <span class="text-2xl">🍣</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">寿司</h3>
+                            <p class="text-gray-600 text-sm">8票</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-medium text-material-blue">44%</div>
+                    </div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-material-blue h-full rounded-full transition-all duration-1000" style="width: 44%"></div>
+                </div>
+            </div>
+            
+            <div class="bg-white material-shadow rounded-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                            <span class="text-2xl">🍜</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">ラーメン</h3>
+                            <p class="text-gray-600 text-sm">6票</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-medium text-material-orange">33%</div>
+                    </div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-material-orange h-full rounded-full transition-all duration-1000" style="width: 33%"></div>
+                </div>
+            </div>
+            
+            <div class="bg-white material-shadow-active rounded-lg p-6 border-l-4 border-material-teal">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                            <span class="text-2xl">🍝</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">パスタ</h3>
+                            <p class="text-gray-600 text-sm">4票</p>
+                        </div>
+                        <div class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-material-teal text-white">
+                            あなたの投票
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-medium text-material-teal">23%</div>
+                    </div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-material-teal h-full rounded-full transition-all duration-1000" style="width: 23%"></div>
+                </div>
+            </div>
+            
+            <!-- Summary Card -->
+            <div class="bg-white material-shadow rounded-lg p-6 mt-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">投票結果サマリー</h3>
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <div class="text-2xl font-bold text-gray-900 mb-1">18</div>
+                        <div class="text-sm text-gray-600">総投票数</div>
+                    </div>
+                    <div class="p-4 bg-blue-50 rounded-lg">
+                        <div class="text-2xl font-bold text-material-blue mb-1">1位</div>
+                        <div class="text-sm text-gray-600">寿司</div>
+                    </div>
+                    <div class="p-4 bg-green-50 rounded-lg">
+                        <div class="flex items-center justify-center space-x-1 mb-1">
+                            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                            <span class="text-sm font-medium text-gray-900">Live</span>
+                        </div>
+                        <div class="text-sm text-gray-600">リアルタイム更新</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function vote(choice) {
+            document.getElementById('voting').classList.add('hidden');
+            document.getElementById('results').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
