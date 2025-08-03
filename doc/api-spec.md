@@ -1,265 +1,172 @@
 # API仕様
 
+## 概要
+
+このAPI仕様書は「doc/requirements.md」で定義されたリアルタイム投票サービスのAPI設計を記述します。
+
 ## アーキテクチャ概要
 
 ```
-[ブラウザ] ↔ [WebSocket Server] ↔ [Redis]
-                     ↓
-               [Redis Pub/Sub]
-                     ↓
-           [他のWebSocket Server]
+[Client] ↔ [REST API] ↔ [Database]
+           ↓
+      [WebSocket API]
+           ↓
+    [Real-time Updates]
 ```
 
-- **REST API**: 基本的なCRUD操作（Redis直接操作）
-- **WebSocket**: Redis Pub/Subの中継層として機能
-- **Redis Pub/Sub**: サーバー間のリアルタイム同期
+- **REST API**: 投票のCRUD操作（作成、取得、投票実行）
+- **WebSocket API**: リアルタイム結果更新と通知
+- **Database**: 投票データの永続化
 
 ## REST API
 
 ### 投票管理API
 
+以下のAPIは「requirements.md」の要件に基づいて設計されています。
+
 #### 投票作成
+
+**要件対応**: 要件 1 - 投票作成機能
+
 ```
 POST /api/polls
 Content-Type: application/json
 
 Request Body:
 {
-  "question": "今日のランチは？",
-  "options": ["寿司", "ラーメン", "パスタ"],
-  "duration": 300
+  "title": "今日のランチは？",
+  "options": ["寿司", "ラーメン", "パスタ"]
 }
 
-Response:
+Validation:
+- title: 必須、空文字不可
+- options: 最低2個、最大10個まで
+
+Response (201 Created):
 {
-  "id": "poll-123",
-  "question": "今日のランチは？",
-  "options": [
-    { "id": "opt-1", "text": "寿司" },
-    { "id": "opt-2", "text": "ラーメン" },
-    { "id": "opt-3", "text": "パスタ" }
-  ],
-  "duration": 300,
-  "status": "active",
-  "createdAt": "2025-01-15T10:00:00Z",
-  "expiresAt": "2025-01-15T10:05:00Z"
+  "success": true,
+  "data": {
+    "id": "poll-123",
+    "title": "今日のランチは？",
+    "options": [
+      { "id": "opt-1", "text": "寿司", "votes": 0, "percentage": 0 },
+      { "id": "opt-2", "text": "ラーメン", "votes": 0, "percentage": 0 },
+      { "id": "opt-3", "text": "パスタ", "votes": 0, "percentage": 0 }
+    ],
+    "status": "active",
+    "createdAt": "2025-01-26T10:00:00Z",
+    "createdBy": "user-456",
+    "totalVotes": 0,
+    "pollUrl": "/poll/poll-123",
+    "adminUrl": "/admin/poll-123"
+  }
 }
 
-Redis操作:
-SET poll:123 '{"question":"今日のランチは？",...}'
-EXPIRE poll:123 300
+Error Response (400 Bad Request):
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "質問文は必須です",
+    "details": {
+      "field": "title",
+      "received": ""
+    }
+  }
+}
 ```
 
 #### 投票取得
+
+**要件対応**: 要件 2 - 投票参加機能
+
 ```
 GET /api/polls/{pollId}
 
-Response:
+Response (200 OK):
 {
-  "id": "poll-123",
-  "question": "今日のランチは？",
-  "options": [
-    { "id": "opt-1", "text": "寿司" },
-    { "id": "opt-2", "text": "ラーメン" },
-    { "id": "opt-3", "text": "パスタ" }
-  ],
-  "duration": 300,
-  "status": "active",
-  "createdAt": "2025-01-15T10:00:00Z",
-  "expiresAt": "2025-01-15T10:05:00Z",
-  "participantCount": 18,
-  "remainingTime": 180
+  "success": true,
+  "data": {
+    "id": "poll-123",
+    "title": "今日のランチは？",
+    "options": [
+      { "id": "opt-1", "text": "寿司", "votes": 5, "percentage": 27.8 },
+      { "id": "opt-2", "text": "ラーメン", "votes": 8, "percentage": 44.4 },
+      { "id": "opt-3", "text": "パスタ", "votes": 5, "percentage": 27.8 }
+    ],
+    "status": "active",
+    "createdAt": "2025-01-26T10:00:00Z",
+    "createdBy": "user-456",
+    "totalVotes": 18
+  }
 }
 
-Redis操作:
-GET poll:123
-SCARD poll:123:participants
-TTL poll:123
+Error Response (404 Not Found):
+{
+  "success": false,
+  "error": {
+    "code": "POLL_NOT_FOUND",
+    "message": "指定された投票が見つかりません"
+  }
+}
 ```
 
 #### 投票実行
+
+**要件対応**: 要件 2 - 投票参加機能
+
 ```
 POST /api/polls/{pollId}/vote
 Content-Type: application/json
 
 Request Body:
 {
-  "optionId": "opt-1"
+  "optionId": "opt-1",
+  "voterId": "user-789"
 }
 
-Response:
+Response (200 OK):
 {
   "success": true,
-  "votedOptionId": "opt-1",
-  "message": "投票が完了しました"
+  "data": {
+    "votedOptionId": "opt-1",
+    "message": "投票が完了しました",
+    "poll": {
+      "id": "poll-123",
+      "title": "今日のランチは？",
+      "options": [
+        { "id": "opt-1", "text": "寿司", "votes": 6, "percentage": 31.6 },
+        { "id": "opt-2", "text": "ラーメン", "votes": 8, "percentage": 42.1 },
+        { "id": "opt-3", "text": "パスタ", "votes": 5, "percentage": 26.3 }
+      ],
+      "totalVotes": 19
+    }
+  }
 }
 
-Redis操作:
-HINCRBY poll:123:votes opt-1 1
-SADD poll:123:participants {userId}
-PUBLISH poll:123:updates '{"type":"VOTE_CAST","optionId":"opt-1"}'
+Error Response (409 Conflict):
+{
+  "success": false,
+  "error": {
+    "code": "ALREADY_VOTED",
+    "message": "既に投票済みです"
+  }
+}
 ```
 
 #### 投票結果取得
+
+**要件対応**: 要件 3 - リアルタイム結果表示機能
+
 ```
 GET /api/polls/{pollId}/results
 
-Response:
+Response (200 OK):
 {
-  "pollId": "poll-123",
-  "question": "今日のランチは？",
-  "results": [
-    {
-      "optionId": "opt-1",
-      "text": "寿司",
-      "votes": 8,
-      "percentage": 44.4
-    },
-    {
-      "optionId": "opt-2",
-      "text": "ラーメン",
-      "votes": 6,
-      "percentage": 33.3
-    },
-    {
-      "optionId": "opt-3",
-      "text": "パスタ",
-      "votes": 4,
-      "percentage": 22.2
-    }
-  ],
-  "totalVotes": 18,
-  "status": "active",
-  "remainingTime": 180
-}
-
-Redis操作:
-HGETALL poll:123:votes
-GET poll:123
-TTL poll:123
-```
-
-### エラーレスポンス
-```
-HTTP 400 Bad Request
-{
-  "error": "INVALID_REQUEST",
-  "message": "投票質問は必須です"
-}
-
-HTTP 404 Not Found
-{
-  "error": "POLL_NOT_FOUND",
-  "message": "指定された投票が見つかりません"
-}
-
-HTTP 409 Conflict
-{
-  "error": "ALREADY_VOTED",
-  "message": "既に投票済みです"
-}
-
-HTTP 410 Gone
-{
-  "error": "POLL_EXPIRED",
-  "message": "投票期間が終了しています"
-}
-```
-
-## WebSocket API
-
-### 接続エンドポイント
-```
-ws://localhost:3000/ws/polls/{pollId}
-```
-
-### Redis Pub/Sub 中継の仕組み
-
-#### 投票実行フロー
-1. クライアント → WebSocket → サーバー
-2. サーバー → Redis (投票データ保存)
-3. サーバー → Redis Pub/Sub (イベント発行)
-4. 他のサーバー → Redis Pub/Sub (イベント受信)
-5. サーバー → WebSocket → 全クライアント (結果配信)
-
-```javascript
-// サーバー側の実装例
-redis.subscribe(`poll:${pollId}:updates`);
-redis.on('message', (channel, message) => {
-  const event = JSON.parse(message);
-  // 接続中のWebSocketクライアントに配信
-  broadcastToClients(pollId, event);
-});
-```
-
-### メッセージフォーマット
-```json
-{
-  "type": "MESSAGE_TYPE",
-  "data": { /* payload */ },
-  "timestamp": "2025-01-15T10:00:00Z"
-}
-```
-
-### クライアント → サーバー
-
-#### 投票参加
-```json
-{
-  "type": "JOIN_POLL",
-  "data": {
-    "pollId": "poll-123"
-  }
-}
-```
-
-#### 投票実行
-```json
-{
-  "type": "CAST_VOTE",
-  "data": {
-    "optionId": "opt-1"
-  }
-}
-```
-
-#### ハートビート
-```json
-{
-  "type": "PING",
-  "data": {}
-}
-```
-
-### サーバー → クライアント
-
-#### 接続確認
-```json
-{
-  "type": "CONNECTION_ESTABLISHED",
+  "success": true,
   "data": {
     "pollId": "poll-123",
-    "participantCount": 18
-  }
-}
-```
-
-#### 投票状況更新（Redis Pub/Sub経由）
-```json
-{
-  "type": "POLL_UPDATE",
-  "data": {
-    "participantCount": 19,
-    "remainingTime": 180
-  }
-}
-```
-
-#### 投票結果更新（Redis Pub/Sub経由）
-```json
-{
-  "type": "RESULTS_UPDATE",
-  "data": {
+    "title": "今日のランチは？",
     "results": [
       {
         "optionId": "opt-1",
@@ -280,7 +187,184 @@ redis.on('message', (channel, message) => {
         "percentage": 22.2
       }
     ],
-    "totalVotes": 18
+    "totalVotes": 18,
+    "status": "active",
+    "createdAt": "2025-01-26T10:00:00Z"
+  }
+}
+```
+
+### 投票管理API
+
+**要件対応**: 要件 4 - 投票管理機能
+
+#### 投票終了
+
+```
+POST /api/polls/{pollId}/end
+Content-Type: application/json
+
+Request Body:
+{
+  "createdBy": "user-456"
+}
+
+Response (200 OK):
+{
+  "success": true,
+  "data": {
+    "message": "投票が終了しました",
+    "poll": {
+      "id": "poll-123",
+      "status": "ended",
+      "finalResults": [
+        {
+          "optionId": "opt-1",
+          "text": "寿司",
+          "votes": 8,
+          "percentage": 44.4
+        }
+      ],
+      "totalVotes": 18
+    }
+  }
+}
+```
+
+### エラーレスポンス
+
+全てのAPIエンドポイントで統一されたエラーフォーマットを使用します。
+
+```
+HTTP 400 Bad Request
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "選択肢は最低2個必要です",
+    "details": {
+      "field": "options",
+      "received": 1,
+      "expected": "minimum 2"
+    }
+  }
+}
+
+HTTP 404 Not Found
+{
+  "success": false,
+  "error": {
+    "code": "POLL_NOT_FOUND",
+    "message": "指定された投票が見つかりません"
+  }
+}
+
+HTTP 409 Conflict
+{
+  "success": false,
+  "error": {
+    "code": "ALREADY_VOTED",
+    "message": "既に投票済みです"
+  }
+}
+
+HTTP 500 Internal Server Error
+{
+  "success": false,
+  "error": {
+    "code": "DATABASE_ERROR",
+    "message": "データベース接続エラーが発生しました"
+  }
+}
+```
+
+## WebSocket API
+
+**要件対応**: 要件 3 - リアルタイム結果表示機能
+
+### 接続エンドポイント
+
+```
+ws://localhost:3000/ws/polls/{pollId}
+```
+
+### リアルタイム更新の仕組み
+
+#### 投票実行フロー
+1. クライアントA → REST API → 投票実行
+2. サーバー → データベース (投票データ保存)
+3. サーバー → WebSocket → 全クライアント (結果更新)
+
+```javascript
+// クライアント側の実装例
+const ws = new WebSocket(`ws://localhost:3000/ws/polls/${pollId}`);
+
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  if (message.type === 'poll-updated') {
+    // 結果画面を更新
+    updatePollResults(message.payload);
+  }
+};
+```
+
+### メッセージフォーマット
+
+WebSocketメッセージは「shared/src/types/index.ts」で定義されたWebSocketMessageインターフェースに従います。
+
+```json
+{
+  "type": "join-poll" | "vote" | "poll-updated" | "vote-recorded" | "poll-ended",
+  "payload": { /* タイプに応じたデータ */ }
+}
+```
+
+### クライアント → サーバー
+
+#### 投票結果購読開始
+```json
+{
+  "type": "join-poll",
+  "payload": {
+    "pollId": "poll-123",
+    "userId": "user-789"
+  }
+}
+```
+
+### サーバー → クライアント
+
+#### 投票結果更新（リアルタイム）
+```json
+{
+  "type": "poll-updated",
+  "payload": {
+    "poll": {
+      "id": "poll-123",
+      "title": "今日のランチは？",
+      "options": [
+        {
+          "id": "opt-1",
+          "text": "寿司",
+          "votes": 8,
+          "percentage": 44.4
+        },
+        {
+          "id": "opt-2",
+          "text": "ラーメン",
+          "votes": 6,
+          "percentage": 33.3
+        },
+        {
+          "id": "opt-3",
+          "text": "パスタ",
+          "votes": 4,
+          "percentage": 22.2
+        }
+      ],
+      "status": "active",
+      "totalVotes": 18
+    }
   }
 }
 ```
@@ -288,191 +372,136 @@ redis.on('message', (channel, message) => {
 #### 投票完了通知
 ```json
 {
-  "type": "VOTE_CONFIRMED",
-  "data": {
+  "type": "vote-recorded",
+  "payload": {
     "votedOptionId": "opt-1",
     "message": "投票が完了しました"
   }
 }
 ```
 
-#### 投票終了通知（Redis Pub/Sub経由）
+#### 投票終了通知
 ```json
 {
-  "type": "POLL_ENDED",
-  "data": {
-    "reason": "TIME_EXPIRED",
-    "finalResults": [
-      {
-        "optionId": "opt-1",
-        "text": "寿司",
-        "votes": 8,
-        "percentage": 44.4
-      },
-      {
-        "optionId": "opt-2",
-        "text": "ラーメン",
-        "votes": 6,
-        "percentage": 33.3
-      },
-      {
-        "optionId": "opt-3",
-        "text": "パスタ",
-        "votes": 4,
-        "percentage": 22.2
-      }
-    ]
+  "type": "poll-ended",
+  "payload": {
+    "reason": "ADMIN_ENDED",
+    "poll": {
+      "id": "poll-123",
+      "status": "ended",
+      "finalResults": [
+        {
+          "id": "opt-1",
+          "text": "寿司",
+          "votes": 8,
+          "percentage": 44.4
+        }
+      ],
+      "totalVotes": 18
+    }
   }
-}
-```
-
-#### エラー通知
-```json
-{
-  "type": "ERROR",
-  "data": {
-    "code": "ALREADY_VOTED",
-    "message": "既に投票済みです"
-  }
-}
-```
-
-#### ハートビート応答
-```json
-{
-  "type": "PONG",
-  "data": {}
 }
 ```
 
 ### 接続状態管理
 
-#### 正常切断
-```json
-{
-  "type": "DISCONNECT",
-  "data": {
-    "reason": "CLIENT_INITIATED"
-  }
-}
+#### 接続管理
+- クライアントは投票ページや結果ページでWebSocket接続を開始
+- サーバーは投票データの変更を検知し、接続中のクライアントにブロードキャスト
+- クライアントは接続が切断された場合、自動で再接続を試みる
+
+## データ永続化
+
+**要件対応**: 要件 5 - データ永続化機能
+
+### データベーススキーマ
+
+#### Polls テーブル
+```sql
+CREATE TABLE polls (
+  id VARCHAR(255) PRIMARY KEY,
+  title TEXT NOT NULL,
+  status ENUM('active', 'ended') DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_by VARCHAR(255) NOT NULL,
+  total_votes INT DEFAULT 0,
+  INDEX idx_created_at (created_at),
+  INDEX idx_status (status)
+);
 ```
 
-#### 異常切断検知
-- クライアント側: WebSocket `onclose` イベントで自動再接続
-- サーバー側: Ping/Pong タイムアウトで接続削除
-- Redis Pub/Sub: 購読状態は自動で削除される
-
-## Redis Pub/Sub チャンネル設計
-
-### チャンネル名
+#### Poll_Options テーブル
+```sql
+CREATE TABLE poll_options (
+  id VARCHAR(255) PRIMARY KEY,
+  poll_id VARCHAR(255) NOT NULL,
+  text TEXT NOT NULL,
+  votes INT DEFAULT 0,
+  percentage DECIMAL(5,2) DEFAULT 0.00,
+  FOREIGN KEY (poll_id) REFERENCES polls(id) ON DELETE CASCADE,
+  INDEX idx_poll_id (poll_id)
+);
 ```
-poll:{pollId}:updates  // 投票更新イベント
-poll:{pollId}:system   // システムイベント（終了等）
-```
 
-### 発行されるイベント
-```json
-// 投票実行時
-{
-  "type": "VOTE_CAST",
-  "pollId": "poll-123",
-  "optionId": "opt-1",
-  "timestamp": "2025-01-15T10:00:00Z"
-}
-
-// 投票終了時
-{
-  "type": "POLL_ENDED",
-  "pollId": "poll-123",
-  "reason": "TIME_EXPIRED",
-  "timestamp": "2025-01-15T10:00:00Z"
-}
+#### Votes テーブル
+```sql
+CREATE TABLE votes (
+  id VARCHAR(255) PRIMARY KEY,
+  poll_id VARCHAR(255) NOT NULL,
+  option_id VARCHAR(255) NOT NULL,
+  voter_id VARCHAR(255) NOT NULL,
+  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (poll_id) REFERENCES polls(id) ON DELETE CASCADE,
+  FOREIGN KEY (option_id) REFERENCES poll_options(id) ON DELETE CASCADE,
+  UNIQUE KEY unique_vote (poll_id, voter_id),
+  INDEX idx_poll_id (poll_id),
+  INDEX idx_voter_id (voter_id)
+);
 ```
 
 ## データ型定義
 
-### Poll
-```typescript
-interface Poll {
-  id: string;
-  question: string;
-  options: Option[];
-  duration: number; // seconds
-  status: 'active' | 'ended';
-  createdAt: string; // ISO 8601
-  expiresAt: string; // ISO 8601
-  participantCount: number;
-  remainingTime: number; // seconds
-}
-```
+全てのデータ型は「shared/src/types/index.ts」で定義されています。
 
-### Option
-```typescript
-interface Option {
-  id: string;
-  text: string;
-}
-```
+### 主要なインターフェース
 
-### VoteResult
-```typescript
-interface VoteResult {
-  optionId: string;
-  text: string;
-  votes: number;
-  percentage: number;
-}
-```
+- `Poll`: 投票の基本情報
+- `PollOption`: 投票の選択肢
+- `Vote`: 投票記録
+- `CreatePollRequest`: 投票作成リクエスト
+- `VoteRequest`: 投票実行リクエスト
+- `WebSocketMessage`: WebSocket通信メッセージ
+- `ApiResponse`: APIレスポンス型
 
-### WebSocketMessage
-```typescript
-interface WebSocketMessage {
-  type: string;
-  data: any;
-  timestamp: string; // ISO 8601
-}
-```
+## セキュリティ考慮事項
 
-## スケーラビリティ
-
-### 水平スケーリング
-- 複数のWebSocketサーバーインスタンス
-- Redis Pub/Subによる自動同期
-- ロードバランサーでの負荷分散
-
-### パフォーマンス最適化
-- Redis のメモリ最適化
-- WebSocket接続のプール管理
-- Pub/Sub チャンネルの効率的な購読
-
-### 高可用性
-- Redis Cluster または Redis Sentinel
-- WebSocketサーバーの冗長化
-- 障害時の自動フェイルオーバー
-
-## 認証・セキュリティ
-
-### セッション管理
-- REST API: セッションCookieまたはJWT
-- WebSocket: 接続時にトークン検証
-- Redis: セッション情報の永続化
+### 入力バリデーション
+- 投票タイトル: 最大200文字、HTMLタグ禁止
+- 選択肢: 最大100文字、HTMLタグ禁止
+- SQLインジェクション対策: プリペアードステートメント使用
 
 ### レート制限
-- REST API: 投票作成 1回/分、投票実行 1回/投票
-- WebSocket: メッセージ送信 10回/秒
-- Redis: IP別のレート制限カウンター
+- 投票作成: 1回/分/IP
+- 投票実行: 1回/投票/ユーザー
+- WebSocket接続: 10接続/IP
 
 ### CORS設定
 ```
 Access-Control-Allow-Origin: https://yourdomain.com
 Access-Control-Allow-Methods: GET, POST, OPTIONS
-Access-Control-Allow-Headers: Content-Type, Authorization
+Access-Control-Allow-Headers: Content-Type
 ```
 
-### Redis セキュリティ
-```
-# Redis設定例
-requirepass your_redis_password
-bind 127.0.0.1
-protected-mode yes
-```
+## モバイル対応
+
+**要件対応**: 要件 6 - レスポンシブデザイン
+
+### レスポンシブブレークポイント
+- モバイル: 768px 未満
+- タブレット: 768px 以上 1024px 未満
+- デスクトップ: 1024px 以上
+
+### APIレスポンスの適応
+- モバイルでのデータ使用量を配慮した軽量化
+- 結果データの圧縮と最適化
+- タッチインターフェースに対応したボタンサイズおよびタップターゲットサイズ

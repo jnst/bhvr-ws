@@ -1,5 +1,9 @@
 # 技術仕様書
 
+## 概要
+
+この技術仕様書は「doc/requirements.md」で定義されたリアルタイム投票サービスの技術実装方針を記述します。
+
 ## 1. 技術スタック選択理由
 
 ### Runtime & Package Manager
@@ -8,6 +12,7 @@
 - 内蔵パッケージマネージャー
 - TypeScript ネイティブサポート
 - WebSocket サポート
+- リアルタイム通信に最適
 
 ### Backend Framework
 **Hono**
@@ -15,12 +20,13 @@
 - TypeScript ファーストの設計
 - 豊富なミドルウェア生態系
 - WebSocket アップグレード対応
+- 投票APIの実装に適している
 
 ### Frontend Framework
 **React 19**
 - 最新のConcurrent Features
-- Server Components対応
-- 成熟した生態系
+- リアルタイムUI更新に最適
+- 豊富な生態系
 - TypeScript優秀なサポート
 
 **Vite**
@@ -33,7 +39,7 @@
 **TailwindCSS + shadcn/ui**
 - ユーティリティファーストCSS
 - 高品質なコンポーネント
-- アクセシビリティ対応
+- アクセシビリティ対応（要件6対応）
 - カスタマイズ性
 
 ## 2. プロジェクト構成
@@ -42,7 +48,7 @@
 ```
 bhvr-ws/
 ├── client/          # React frontend
-├── server/          # Hono backend
+├── server/          # Hono backend  
 ├── shared/          # 共通型定義
 ├── doc/             # 設計書
 └── package.json     # Workspace設定
@@ -63,9 +69,189 @@ graph TD
 - 共有型による型安全なAPI通信
 - Path aliasによる明確な依存関係
 
-## 3. パフォーマンス要件
+## 3. 要件対応アーキテクチャ
 
-### レスポンス時間
+### 要件 1: 投票作成機能
+```typescript
+// 投票作成API実装
+class PollController {
+  async createPoll(request: CreatePollRequest): Promise<ApiResponse<Poll>> {
+    // バリデーション
+    if (!request.title || request.title.trim().length === 0) {
+      return {
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: '質問文は必須です'
+        }
+      };
+    }
+    
+    if (!request.options || request.options.length < 2) {
+      return {
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR', 
+          message: '選択肢は最低2個必要です'
+        }
+      };
+    }
+    
+    // 投票作成
+    const poll = await this.pollService.createPoll(request);
+    return { success: true, data: poll };
+  }
+}
+```
+
+### 要件 2: 投票参加機能
+```typescript
+// 重複投票防止機能
+class VoteService {
+  private votes = new Map<string, Set<string>>(); // pollId -> voterIds
+  
+  async vote(pollId: string, optionId: string, voterId: string): Promise<boolean> {
+    const pollVoters = this.votes.get(pollId) || new Set();
+    
+    // 重複投票チェック
+    if (pollVoters.has(voterId)) {
+      throw new Error('ALREADY_VOTED');
+    }
+    
+    // 投票記録
+    pollVoters.add(voterId);
+    this.votes.set(pollId, pollVoters);
+    
+    return true;
+  }
+}
+```
+
+### 要件 3: リアルタイム結果表示機能
+```typescript
+// WebSocket実装
+class WebSocketHandler {
+  private connections = new Map<string, Set<WebSocket>>();
+  
+  async handleVote(pollId: string, vote: Vote) {
+    // 投票処理
+    await this.voteService.addVote(vote);
+    
+    // リアルタイム更新配信
+    const updatedPoll = await this.pollService.getPollWithResults(pollId);
+    this.broadcastToPoll(pollId, {
+      type: 'poll-updated',
+      payload: { poll: updatedPoll }
+    });
+  }
+  
+  private broadcastToPoll(pollId: string, message: WebSocketMessage) {
+    const connections = this.connections.get(pollId) || new Set();
+    connections.forEach(ws => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(message));
+      }
+    });
+  }
+}
+```
+
+### 要件 4: 投票管理機能
+```typescript
+// 投票終了機能
+class PollAdminController {
+  async endPoll(pollId: string, createdBy: string): Promise<ApiResponse<Poll>> {
+    const poll = await this.pollService.getPoll(pollId);
+    
+    // 権限チェック
+    if (poll.createdBy !== createdBy) {
+      return {
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: '投票を終了する権限がありません'
+        }
+      };
+    }
+    
+    // 投票終了
+    const endedPoll = await this.pollService.endPoll(pollId);
+    
+    // 全クライアントに通知
+    this.webSocketHandler.broadcastToPoll(pollId, {
+      type: 'poll-ended',
+      payload: { poll: endedPoll, reason: 'ADMIN_ENDED' }
+    });
+    
+    return { success: true, data: endedPoll };
+  }
+}
+```
+
+### 要件 5: データ永続化機能
+```typescript
+// データベース抽象化層
+interface IPollRepository {
+  create(poll: Poll): Promise<Poll>;
+  findById(id: string): Promise<Poll | null>;
+  update(id: string, data: Partial<Poll>): Promise<Poll>;
+  delete(id: string): Promise<void>;
+}
+
+// MVP版: インメモリ実装
+class InMemoryPollRepository implements IPollRepository {
+  private polls = new Map<string, Poll>();
+  
+  async create(poll: Poll): Promise<Poll> {
+    this.polls.set(poll.id, poll);
+    return poll;
+  }
+  
+  async findById(id: string): Promise<Poll | null> {
+    return this.polls.get(id) || null;
+  }
+  
+  // サーバー再起動時の復元対応
+  async restore(): Promise<void> {
+    // 将来のDB実装でデータ復元
+    console.log('Restoring poll data...');
+  }
+}
+```
+
+### 要件 6: レスポンシブデザイン
+```typescript
+// レスポンシブコンポーネント設計
+const PollCard: React.FC<PollCardProps> = ({ poll }) => {
+  return (
+    <div className="
+      w-full max-w-md mx-auto
+      sm:max-w-lg md:max-w-xl lg:max-w-2xl
+      p-4 sm:p-6
+      bg-white rounded-lg shadow-md
+      hover:shadow-lg transition-shadow
+    ">
+      <h3 className="text-lg sm:text-xl font-semibold mb-4">
+        {poll.title}
+      </h3>
+      
+      <div className="space-y-2 sm:space-y-3">
+        {poll.options.map(option => (
+          <PollOption 
+            key={option.id}
+            option={option}
+            className="min-h-[44px] touch-target" // タッチ対応
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+```
+
+## 4. パフォーマンス要件
+
+### レスポンス時間目標
 | 機能 | 目標値 | 測定方法 |
 |------|--------|----------|
 | WebSocket接続 | < 1秒 | 接続確立時間 |
@@ -75,12 +261,12 @@ graph TD
 
 ### スケーラビリティ
 - 同時接続数: 100ユーザー（MVP）
-- メモリ使用量: < 512MB
+- メモリ使用量: < 512MB  
 - CPU使用率: < 70%
 
-### 最適化戦略
+### WebSocket最適化
 ```typescript
-// WebSocket接続プール管理
+// 接続プール管理
 class ConnectionPool {
   private connections = new Map<string, WebSocket>();
   private maxConnections = 100;
@@ -92,51 +278,54 @@ class ConnectionPool {
     this.connections.set(sessionId, ws);
   }
   
-  removeConnection(sessionId: string) {
-    this.connections.delete(sessionId);
-  }
-  
-  broadcast(event: string, data: any) {
-    this.connections.forEach(ws => {
+  // 効率的なブロードキャスト
+  broadcast(pollId: string, message: WebSocketMessage) {
+    const jsonMessage = JSON.stringify(message);
+    
+    this.connections.forEach((ws, sessionId) => {
       if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ event, data }));
+        try {
+          ws.send(jsonMessage);
+        } catch (error) {
+          console.error(`Failed to send to ${sessionId}:`, error);
+          this.connections.delete(sessionId);
+        }
       }
     });
   }
 }
 ```
 
-## 4. データ管理戦略
+## 5. データ管理戦略
 
-### メモリストレージ（MVP）
+### MVPデータストア
 ```typescript
 // インメモリーデータストア
-class InMemoryStore {
+class DataStore {
   private polls = new Map<string, Poll>();
   private votes = new Map<string, Vote[]>();
-  private users = new Map<string, User>();
+  private pollVoters = new Map<string, Set<string>>();
   
-  // 投票データの効率的な管理
-  getPoll(id: string): Poll | undefined {
-    return this.polls.get(id);
-  }
-  
-  addVote(vote: Vote): void {
-    const existingVotes = this.votes.get(vote.pollId) || [];
-    existingVotes.push(vote);
-    this.votes.set(vote.pollId, existingVotes);
-  }
-  
-  // 投票結果の集計
-  aggregateVotes(pollId: string): PollOption[] {
+  // 投票結果の効率的な集計
+  aggregateResults(pollId: string): PollOption[] {
     const poll = this.polls.get(pollId);
     const votes = this.votes.get(pollId) || [];
+    const totalVotes = votes.length;
     
-    return poll?.options.map(option => ({
-      ...option,
-      votes: votes.filter(v => v.optionId === option.id).length,
-      percentage: (votes.filter(v => v.optionId === option.id).length / votes.length) * 100
-    })) || [];
+    return poll?.options.map(option => {
+      const optionVotes = votes.filter(v => v.optionId === option.id).length;
+      return {
+        ...option,
+        votes: optionVotes,
+        percentage: totalVotes > 0 ? (optionVotes / totalVotes) * 100 : 0
+      };
+    }) || [];
+  }
+  
+  // 重複投票チェック
+  hasVoted(pollId: string, voterId: string): boolean {
+    const voters = this.pollVoters.get(pollId) || new Set();
+    return voters.has(voterId);
   }
 }
 ```
@@ -145,80 +334,46 @@ class InMemoryStore {
 - **Phase 2**: SQLite による軽量な永続化
 - **Phase 3**: PostgreSQL + Redis による本格運用
 
-## 5. WebSocket通信仕様
-
-### 接続管理
-```typescript
-// WebSocket接続ハンドラー
-class WebSocketHandler {
-  private connections = new ConnectionPool();
-  
-  async handleConnection(ws: WebSocket, sessionId: string) {
-    // 接続登録
-    this.connections.addConnection(sessionId, ws);
-    
-    // ハートビート設定
-    const heartbeat = setInterval(() => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.ping();
-      }
-    }, 30000);
-    
-    // 切断処理
-    ws.on('close', () => {
-      clearInterval(heartbeat);
-      this.connections.removeConnection(sessionId);
-    });
-  }
-}
-```
-
-### イベント駆動アーキテクチャ
-```typescript
-// イベント処理システム
-class EventBus {
-  private listeners = new Map<string, Function[]>();
-  
-  on(event: string, handler: Function) {
-    const handlers = this.listeners.get(event) || [];
-    handlers.push(handler);
-    this.listeners.set(event, handlers);
-  }
-  
-  emit(event: string, data: any) {
-    const handlers = this.listeners.get(event) || [];
-    handlers.forEach(handler => handler(data));
-  }
-}
-```
-
 ## 6. エラーハンドリング戦略
 
 ### エラー分類
-1. **ネットワークエラー**: 接続断、タイムアウト
-2. **バリデーションエラー**: 不正な入力値
-3. **システムエラー**: メモリ不足、内部エラー
-4. **ビジネスロジックエラー**: 重複投票、無効な投票
+1. **バリデーションエラー**: 入力値不正（要件1、2対応）
+2. **ビジネスロジックエラー**: 重複投票等（要件2対応）
+3. **ネットワークエラー**: WebSocket切断等（要件3対応）
+4. **システムエラー**: サーバー内部エラー（要件5対応）
 
-### エラーハンドリング実装
+### 統一エラーハンドリング
 ```typescript
-// 統一エラーハンドラー
+// エラーハンドラー
 class ErrorHandler {
-  static handle(error: Error, context: string) {
-    // ログ出力
-    console.error(`[${context}] ${error.message}`, error.stack);
-    
-    // エラータイプ判定
-    if (error instanceof ValidationError) {
-      return { type: 'validation', message: error.message };
+  static handleApiError(error: Error): ApiErrorResponse {
+    if (error.message === 'ALREADY_VOTED') {
+      return {
+        success: false,
+        error: {
+          code: 'ALREADY_VOTED',
+          message: '既に投票済みです'
+        }
+      };
     }
     
-    if (error instanceof NetworkError) {
-      return { type: 'network', message: 'Connection failed' };
+    if (error.message === 'POLL_NOT_FOUND') {
+      return {
+        success: false,
+        error: {
+          code: 'POLL_NOT_FOUND',
+          message: '指定された投票が見つかりません'
+        }
+      };
     }
     
-    // 一般的なエラー
-    return { type: 'system', message: 'An unexpected error occurred' };
+    return {
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'システムエラーが発生しました'
+      }
+    };
   }
 }
 ```
@@ -226,53 +381,82 @@ class ErrorHandler {
 ### フロントエンドエラー処理
 ```typescript
 // React Error Boundary
-class VotingErrorBoundary extends React.Component {
-  constructor(props: any) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
+const VotingErrorBoundary: React.FC<{ children: React.ReactNode }> = ({ 
+  children 
+}) => {
+  const [hasError, setHasError] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
   
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
-  }
-  
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Voting system error:', error, errorInfo);
-  }
-  
-  render() {
-    if (this.state.hasError) {
-      return <ErrorFallback error={this.state.error} />;
-    }
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      setHasError(true);
+      setError(new Error(event.message));
+    };
     
-    return this.props.children;
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+  
+  if (hasError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">エラーが発生しました</h2>
+          <p className="text-gray-600 mb-4">
+            ページを再読み込みしてください
+          </p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            再読み込み
+          </button>
+        </div>
+      </div>
+    );
   }
-}
+  
+  return <>{children}</>;
+};
 ```
 
 ## 7. セキュリティ仕様
 
 ### 入力値検証
 ```typescript
-// バリデーション関数
-const validatePollCreation = (data: any): ValidationResult => {
+// バリデーション実装
+const validatePollCreation = (data: CreatePollRequest): ValidationResult => {
   const errors: string[] = [];
   
-  if (!data.title || data.title.trim().length < 3) {
-    errors.push('Title must be at least 3 characters');
+  // タイトル検証
+  if (!data.title?.trim()) {
+    errors.push('タイトルは必須です');
+  } else if (data.title.length > 200) {
+    errors.push('タイトルは200文字以内で入力してください');
   }
   
+  // 選択肢検証
   if (!data.options || data.options.length < 2) {
-    errors.push('At least 2 options required');
+    errors.push('選択肢は最低2個必要です');
+  } else if (data.options.length > 10) {
+    errors.push('選択肢は最大10個までです');
   }
+  
+  // HTMLタグ除去
+  data.title = sanitizeHtml(data.title);
+  data.options = data.options.map(option => sanitizeHtml(option));
   
   return { isValid: errors.length === 0, errors };
 };
+
+function sanitizeHtml(input: string): string {
+  return input.replace(/<[^>]*>/g, '');
+}
 ```
 
 ### WebSocket セキュリティ
 - Origin検証
-- Rate limiting
+- Rate limiting（10接続/IP）
 - セッションベースの認証
 - 入力値のサニタイズ
 
@@ -280,9 +464,9 @@ const validatePollCreation = (data: any): ValidationResult => {
 
 ### ログレベル
 - **DEBUG**: 開発時のデバッグ情報
-- **INFO**: 一般的な動作ログ
-- **WARN**: 警告レベルの問題
-- **ERROR**: エラー発生時
+- **INFO**: 投票作成、投票実行等の操作ログ
+- **WARN**: 異常な操作、接続エラー等
+- **ERROR**: システムエラー、データベースエラー
 
 ### メトリクス収集
 ```typescript
@@ -290,7 +474,6 @@ const validatePollCreation = (data: any): ValidationResult => {
 class Metrics {
   private static instance: Metrics;
   private counters = new Map<string, number>();
-  private timers = new Map<string, number>();
   
   static getInstance(): Metrics {
     if (!Metrics.instance) {
@@ -299,13 +482,26 @@ class Metrics {
     return Metrics.instance;
   }
   
-  incrementCounter(name: string, value: number = 1) {
+  // 投票関連メトリクス
+  recordPollCreation() {
+    this.incrementCounter('polls_created');
+  }
+  
+  recordVote() {
+    this.incrementCounter('votes_cast');
+  }
+  
+  recordWebSocketConnection() {
+    this.incrementCounter('websocket_connections');
+  }
+  
+  private incrementCounter(name: string, value: number = 1) {
     const current = this.counters.get(name) || 0;
     this.counters.set(name, current + value);
   }
   
-  recordTimer(name: string, duration: number) {
-    this.timers.set(name, duration);
+  getMetrics() {
+    return Object.fromEntries(this.counters);
   }
 }
 ```
@@ -315,42 +511,67 @@ class Metrics {
 ### テスト構成
 - **Unit Tests**: 個別関数・コンポーネント
 - **Integration Tests**: API・WebSocket通信
-- **E2E Tests**: ユーザーフロー全体
+- **E2E Tests**: 投票フロー全体
 
 ### テストツール
-- **Jest**: ユニットテスト
+- **Bun Test**: ユニットテスト（Bunネイティブ）
 - **React Testing Library**: コンポーネントテスト
 - **Playwright**: E2Eテスト
 
-### CI/CDパイプライン（将来）
-```yaml
-# GitHub Actions例
-name: CI/CD Pipeline
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: oven-sh/setup-bun@v1
-      - run: bun install
-      - run: bun run test
-      - run: bun run lint
-      - run: bun run build
+### 重要テストケース
+```typescript
+// 投票機能テスト
+describe('Voting System', () => {
+  test('should prevent duplicate voting', async () => {
+    const pollId = 'test-poll';
+    const voterId = 'user-123';
+    const optionId = 'option-1';
+    
+    // 1回目の投票
+    await voteService.vote(pollId, optionId, voterId);
+    
+    // 2回目の投票（エラーになるべき）
+    await expect(
+      voteService.vote(pollId, optionId, voterId)
+    ).rejects.toThrow('ALREADY_VOTED');
+  });
+  
+  test('should update results in real-time', async () => {
+    const mockWebSocket = new MockWebSocket();
+    const handler = new WebSocketHandler();
+    
+    await handler.handleVote('poll-123', {
+      id: 'vote-1',
+      pollId: 'poll-123',
+      optionId: 'opt-1',
+      voterId: 'user-456',
+      timestamp: new Date()
+    });
+    
+    expect(mockWebSocket.sentMessages).toContain(
+      expect.objectContaining({
+        type: 'poll-updated'
+      })
+    );
+  });
+});
 ```
 
 ## 10. デプロイメント戦略
 
 ### 開発環境
-- ローカル開発: `bun run dev`
-- ホットリロード有効
-- 開発用WebSocket接続
+```bash
+# 開発サーバー起動
+bun run dev           # 全サービス並列起動
+bun run dev:client    # フロントエンドのみ
+bun run dev:server    # バックエンドのみ
+```
 
 ### 本番環境（将来）
 - **Frontend**: Vercel / Netlify
-- **Backend**: Railway / Fly.io
+- **Backend**: Railway / Fly.io  
 - **WebSocket**: 専用インスタンス
+- **Database**: PostgreSQL + Redis
 
 ### 環境変数管理
 ```typescript
@@ -360,12 +581,36 @@ interface Config {
   NODE_ENV: 'development' | 'production';
   CLIENT_URL: string;
   WEBSOCKET_PORT: number;
+  DATABASE_URL?: string;
+  REDIS_URL?: string;
 }
 
 const config: Config = {
   PORT: parseInt(process.env.PORT || '3000'),
-  NODE_ENV: process.env.NODE_ENV || 'development',
+  NODE_ENV: process.env.NODE_ENV as Config['NODE_ENV'] || 'development',
   CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:5173',
-  WEBSOCKET_PORT: parseInt(process.env.WEBSOCKET_PORT || '3001')
+  WEBSOCKET_PORT: parseInt(process.env.WEBSOCKET_PORT || '3001'),
+  DATABASE_URL: process.env.DATABASE_URL,
+  REDIS_URL: process.env.REDIS_URL
 };
+
+export default config;
 ```
+
+## 11. マイグレーション計画
+
+### Phase 1 (MVP): インメモリ実装
+- 基本的な投票機能
+- WebSocketによるリアルタイム更新
+- シンプルなUI
+
+### Phase 2: 軽量永続化
+- SQLite導入
+- データ復元機能
+- 基本的な管理機能
+
+### Phase 3: 本格運用
+- PostgreSQL + Redis
+- 高可用性構成
+- スケーラビリティ向上
+- 高度な分析機能
